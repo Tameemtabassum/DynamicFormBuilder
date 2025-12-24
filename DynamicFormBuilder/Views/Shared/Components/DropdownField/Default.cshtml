@@ -1,0 +1,31 @@
+﻿@model DynamicFormBuilder.Models.FormFieldModel
+
+<div class="col-md-6 mb-4">
+    <div class="card h-100">
+        <div class="card-body">
+            <label class="form-label fw-bold">
+                @Model.FieldLabel
+                @if (Model.IsRequired)
+                {
+                    <span class="text-danger" style="font-size: 1.2em;">*</span>
+                }
+            </label>
+            <select class="form-select" disabled>
+                <option value="">-- Choose Option --</option>
+                @foreach (var option in new[] { "Option 1", "Option 2", "Option 3", "Option 4", "Option 5" })
+                {
+                    <option value="@option" selected="@(option == Model.SelectedOption)">
+                        @option
+                    </option>
+                }
+            </select>
+            <div class="mt-2">
+                <span class="badge bg-success">Selected: @Model.SelectedOption</span>
+                @if (Model.IsRequired)
+                {
+                    <span class="badge bg-danger">Required Field</span>
+                }
+            </div>
+        </div>
+    </div>
+</div>

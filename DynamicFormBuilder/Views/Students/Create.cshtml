@@ -1,0 +1,57 @@
+﻿@model DynamicFormBuilder.Models.StudentModel
+
+<h2 class="text-center mb-4 text-primary fw-bold">Register New Student</h2>
+
+<div class="d-flex justify-content-center">
+    <div class="card shadow p-4 w-100"
+         style="max-width: 600px; border-left: 5px solid #0d6efd;">
+
+        <form asp-action="Create" method="post">
+
+            <div class="mb-3">
+                <label asp-for="StudentName" class="form-label fw-semibold text-primary"></label>
+                <input asp-for="StudentName" class="form-control border-primary" />
+                <span asp-validation-for="StudentName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Age" class="form-label fw-semibold text-primary"></label>
+                <input asp-for="Age" class="form-control border-primary" />
+                <span asp-validation-for="Age" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="PhoneNumber" class="form-label fw-semibold text-primary"></label>
+                <input asp-for="PhoneNumber" class="form-control border-primary" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label fw-semibold text-primary"></label>
+                <input asp-for="Email" class="form-control border-primary" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Address" class="form-label fw-semibold text-primary"></label>
+                <input asp-for="Address" class="form-control border-primary" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Department" class="form-label fw-semibold text-primary"></label>
+                <input asp-for="Department" class="form-control border-primary" />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100 mt-2 fw-semibold">
+                Register New Student
+            </button>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

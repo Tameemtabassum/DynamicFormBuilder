@@ -1,0 +1,54 @@
+﻿@model DynamicFormBuilder.Models.ParticipantsModel
+
+<h2 class="text-center mb-4 text-warning fw-bold">Edit Participant</h2>
+
+<div class="d-flex justify-content-center">
+    <div class="card shadow p-4 w-100"
+         style="max-width: 600px; border-left: 5px solid #ffc108;">
+
+        <form asp-action="Edit" method="post">
+
+            @* Hidden field for Id *@
+            <input type="hidden" asp-for="Id" />
+
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label fw-semibold text-warning"></label>
+                <input asp-for="Name" class="form-control border-warning" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label fw-semibold text-warning"></label>
+                <input asp-for="Email" class="form-control border-warning" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Phone" class="form-label fw-semibold text-warning"></label>
+                <input asp-for="Phone" class="form-control border-warning" />
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Address" class="form-label fw-semibold text-warning"></label>
+                <input asp-for="Address" class="form-control border-warning" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Country" class="form-label fw-semibold text-warning"></label>
+                <input asp-for="Country" class="form-control border-warning" />
+            </div>
+
+            <button type="submit" class="btn btn-warning w-100 mt-2 fw-semibold">
+                Update Participant
+            </button>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

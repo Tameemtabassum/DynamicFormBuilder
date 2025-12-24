@@ -1,0 +1,153 @@
+﻿@model IEnumerable<DynamicFormBuilder.Models.ParticipantsModel>
+@using DynamicFormBuilder.Models
+@{
+    ViewData["Title"] = "Participants List";
+}
+<h2 class="mb-3">Participants List</h2>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <a asp-action="Create" class="btn btn-primary">+ Add New Participant</a>
+        <a asp-action="ExcelDownload" class="btn btn-success">Download Participants list</a>
+    </div>
+    <div style="width: 300px;">
+        <input type="text"
+               id="searchInput"
+               class="form-control"
+               placeholder="Search participants..."
+               autocomplete="off">
+    </div>
+</div>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table table-bordered table-striped" id="participantsTable">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Address</th>
+                <th>Country</th>
+                <th style="width:180px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var participant in Model)
+            {
+                <tr>
+                    <td>@participant.Id</td>
+                    <td>@participant.Name</td>
+                    <td>@participant.Email</td>
+                    <td>@participant.Phone</td>
+                    <td>@participant.Address</td>
+                    <td>@participant.Country</td>
+                    <td class="text-center">
+                        <div class="d-flex justify-content-center gap-1">
+                            <a asp-action="Edit"
+                               asp-route-id="@participant.Id"
+                               class="btn btn-warning btn-sm">
+                                Edit
+                            </a>
+                            <a asp-action="Details"
+                               asp-route-id="@participant.Id"
+                               class="btn btn-info btn-sm text-white">
+                                Details
+                            </a>
+                            <a asp-action="Delete"
+                               asp-route-id="@participant.Id"
+                               class="btn btn-danger btn-sm"
+                               onclick="return confirm('Are you sure?');">
+                                Delete
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+
+    <nav>
+        <ul class="pagination">
+            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                <a class="page-link"
+                   href="?page=@(ViewBag.CurrentPage - 1)&pageSize=@ViewBag.PageSize">
+                    Previous
+                </a>
+            </li>
+
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                    <a class="page-link"
+                       href="?page=@i&pageSize=@ViewBag.PageSize">
+                        @i
+                    </a>
+                </li>
+            }
+
+            <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
+                <a class="page-link"
+                   href="?page=@(ViewBag.CurrentPage + 1)&pageSize=@ViewBag.PageSize">
+                    Next
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div id="noResults" class="alert alert-warning" style="display: none;">
+        No participants found matching your search.
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        No participants found. Click <strong>Add New Participant</strong> to add one.
+    </div>
+}
+
+@section Scripts {
+    <script>
+        document.getElementById('searchInput').addEventListener('keyup', function() {
+            const searchText = this.value.toLowerCase();
+            const table = document.getElementById('participantsTable');
+            const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+            let visibleCount = 0;
+
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                const cells = row.getElementsByTagName('td');
+                let found = false;
+
+                
+                for (let j = 0; j < 6; j++) {
+                    const cellText = cells[j].textContent.toLowerCase();
+                    if (cellText.includes(searchText)) {
+                        found = true;
+                        break;
+                    }
+                }
+                
+                if (found) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            }
+
+            // Show/hide "no results" message
+            const noResults = document.getElementById('noResults');
+            if (visibleCount === 0 && searchText !== '') {
+                noResults.style.display = 'block';
+                table.style.display = 'none';
+            } 
+            else {
+                noResults.style.display = 'none';
+                table.style.display = 'table';
+            }
+        });
+    </script>
+}

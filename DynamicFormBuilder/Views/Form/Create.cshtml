@@ -1,0 +1,178 @@
+﻿@{
+    ViewData["Title"] = "Create Form";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Create Dynamic Form</h3>
+                </div>
+                <div class="card-body">
+                    <form id="formBuilder">
+                        <!-- Form Title -->
+                        <div class="mb-4">
+                            <label for="formTitle" class="form-label">Form Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="formTitle" name="formTitle" placeholder="Enter form title" required>
+                            <div class="invalid-feedback">Please enter a form title.</div>
+                        </div>
+
+                        <hr>
+
+                        <!-- Dynamic Fields Container -->
+                        <div id="fieldsContainer">
+                            <h5 class="mb-3">Form Fields</h5>
+                        </div>
+
+                        <!-- Add More Button -->
+                        <div class="mb-4">
+                            <button type="button" class="btn btn-success" id="addFieldBtn">
+                                <i class="bi bi-plus-circle"></i> Add More Field
+                            </button>
+                        </div>
+
+                        <hr>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="@Url.Action("Index", "Form")" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="bi bi-save"></i> Submit Form
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@4.0.0/dist/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        let fieldCounter = 0;
+        const fixedOptions = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5'];
+
+        $(document).ready(function () {
+            // Add first field automatically
+            addField();
+
+            // Add More button click
+            $('#addFieldBtn').on('click', function () {
+                addField();
+            });
+
+            // Form submission with validation
+            $('#formBuilder').on('submit', function (e) {
+                e.preventDefault();
+
+                if (!this.checkValidity()) {
+                    e.stopPropagation();
+                    $(this).addClass('was-validated');
+                    return false;
+                }
+
+                const formTitle = $('#formTitle').val().trim();
+                const fields = [];
+
+                $('.field-item').each(function () {
+                    const fieldLabel = $(this).find('.field-label').val().trim();
+                    const selectedOption = $(this).find('.field-options').val();
+                    const isRequired = $(this).find('.field-required').is(':checked');
+
+                    if (fieldLabel && selectedOption) {
+                        fields.push({
+                            FieldLabel: fieldLabel,
+                            SelectedOption: selectedOption,
+                            IsRequired: isRequired
+                        });
+                    }
+                });
+
+                if (fields.length === 0) {
+                    alert('Please add at least one field with label and selected option.');
+                    return false;
+                }
+
+                // Disable submit button
+                $('#submitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-2"></span>Saving...');
+
+                // Submit via AJAX
+                $.ajax({
+                    url: '@Url.Action("Create", "Form")',
+                    type: 'POST',
+                    data: {
+                        formTitle: formTitle,
+                        fieldsJson: JSON.stringify(fields)
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            alert(response.message);
+                            window.location.href = '@Url.Action("Index", "Form")';
+                        } else {
+                            alert(response.message);
+                            $('#submitBtn').prop('disabled', false).html('<i class="bi bi-save"></i> Submit Form');
+                        }
+                    },
+                    error: function () {
+                        alert('An error occurred while saving the form.');
+                        $('#submitBtn').prop('disabled', false).html('<i class="bi bi-save"></i> Submit Form');
+                    }
+                });
+            });
+        });
+
+        function addField() {
+            fieldCounter++;
+
+            const fieldHtml = `
+                <div class="card mb-3 field-item">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <label class="form-label">Field Label <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control field-label" placeholder="e.g., Select Country" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Select Option <span class="text-danger">*</span></label>
+                                <select class="form-select field-options" required>
+                                    <option value="">-- Choose Option --</option>
+                                    ${fixedOptions.map(opt => `<option value="${opt}">${opt}</option>`).join('')}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input field-required" type="checkbox" id="required${fieldCounter}">
+                                    <label class="form-check-label" for="required${fieldCounter}">
+                                        Required
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <button type="button" class="btn btn-danger btn-sm mt-4 remove-field">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            $('#fieldsContainer').append(fieldHtml);
+        }
+
+        // Remove field
+        $(document).on('click', '.remove-field', function () {
+            if ($('.field-item').length > 1) {
+                $(this).closest('.field-item').remove();
+            } else {
+                alert('You must have at least one field.');
+            }
+        });
+    </script>
+}

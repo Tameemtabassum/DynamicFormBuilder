@@ -1,0 +1,53 @@
+﻿@model IEnumerable<DynamicFormBuilder.Models.EmployeeModel>
+
+@{
+    ViewData["Title"] = "Employees List";
+}
+
+<h2 class="mb-3">Employees List</h2>
+
+<a asp-action="Create" class="btn btn-primary mb-3">+ Add New Employee</a>
+
+@if (Model != null && Model.Any())
+{
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Age</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Address</th>
+                <th>Department</th>
+                <th style="width:150px;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var emp in Model)
+            {
+                <tr>
+                    <td>@emp.Id</td>
+                    <td>@emp.EmployeeName</td>
+                    <td>@emp.Age</td>
+                    <td>@emp.PhoneNumber</td>
+                    <td>@emp.Email</td>
+                    <td>@emp.Address</td>
+                    <td>@emp.Department</td>
+
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@emp.Id" class="btn btn-warning btn-sm me-1">Edit</a>
+                        <a asp-action="Delete" asp-route-id="@emp.Id" class="btn btn-danger btn-sm"
+                           onclick="return confirm('Are you sure?');">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info">
+        No employees found. Click <strong>Add New Employee</strong> to create one.
+    </div>
+}

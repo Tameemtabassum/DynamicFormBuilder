@@ -1,0 +1,90 @@
+﻿@model DynamicFormBuilder.Models.CustomerModel
+
+@{
+    ViewData["Title"] = "Delete Customer";
+}
+
+<style>
+    body {
+        background: #f2f6fc;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .delete-container {
+        max-width: 500px;
+        margin: 50px auto;
+    }
+
+    .delete-card {
+        background: white;
+        padding: 30px;
+        border-radius: 15px;
+        box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+        text-align: center;
+    }
+
+    .delete-title {
+        color: #ff4d4f;
+        font-weight: 600;
+        margin-bottom: 20px;
+    }
+
+    {
+        font-weight: 600;
+        color: #333;
+    }
+
+    {
+        margin-bottom: 10px;
+        color: #555;
+    }
+
+    .btn-danger {
+        background-color: #ff4d4f;
+        border: none;
+        font-weight: 600;
+    }
+
+        .btn-danger:hover {
+            background-color: #d9363e;
+        }
+
+    .btn-secondary {
+        font-weight: 600;
+    }
+</style>
+
+<div class="delete-container">
+    <div class="delete-card">
+        <h2 class="delete-title">Delete Customer</h2>
+
+        <p>Are you sure you want to delete this customer?</p>
+
+        <dl class="row text-start mt-3">
+            <dt class="col-sm-4">Name</dt>
+            <dd class="col-sm-8">@Model.FirstName @Model.LastName</dd>
+
+            <dt class="col-sm-4">Email</dt>
+            <dd class="col-sm-8">@Model.Email</dd>
+
+            <dt class="col-sm-4">Phone</dt>
+            <dd class="col-sm-8">@Model.Phone</dd>
+
+            <dt class="col-sm-4">Division</dt>
+            <dd class="col-sm-8">@ViewBag.DivisionName</dd>
+
+            <dt class="col-sm-4">District</dt>
+            <dd class="col-sm-8">@ViewBag.DistrictName</dd>
+
+
+            <dt class="col-sm-4">Balance</dt>
+            <dd class="col-sm-8">@Model.Balance.ToString("N2")</dd>
+        </dl>
+
+        <form asp-action="Delete" method="post" class="mt-4">
+            <input type="hidden" asp-for="CustomerID" />
+            <button type="submit" class="btn btn-danger px-4">Delete</button>
+            <a asp-action="Index" class="btn btn-secondary px-4 ms-2">Cancel</a>
+        </form>
+    </div>
+</div>

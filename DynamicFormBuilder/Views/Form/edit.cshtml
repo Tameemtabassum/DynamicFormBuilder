@@ -1,0 +1,176 @@
+﻿@using Newtonsoft.Json
+using Newtonsoft.Json;
+
+@model DynamicFormBuilder.Models.FormViewModel
+@{
+    ViewData["Title"] = "Edit Form";
+}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h3 class="mb-0">Edit Dynamic Form</h3>
+                </div>
+                <div class="card-body">
+                    <form id="formBuilder">
+                        <!-- Form Title -->
+                        <div class="mb-4">
+                            <label for="formTitle" class="form-label">Form Title <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="formTitle" name="formTitle" value="@Model.FormTitle" required>
+                            <div class="invalid-feedback">Please enter a form title.</div>
+                        </div>
+
+                        <hr />
+
+                        <!-- Dynamic Fields -->
+                        <div id="fieldsContainer">
+                            <h5 class="mb-3">Form Fields</h5>
+                        </div>
+
+                        <!-- Add More Field -->
+                        <div class="mb-4">
+                            <button type="button" class="btn btn-success" id="addFieldBtn">
+                                <i class="bi bi-plus-circle"></i> Add More Field
+                            </button>
+                        </div>
+
+                        <hr />
+
+                        <!-- Buttons -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="@Url.Action("Index", "Form")" class="btn btn-secondary">
+                                <i class="bi bi-arrow-left"></i> Back to List
+                            </a>
+                            <button type="submit" class="btn btn-warning" id="submitBtn">
+                                <i class="bi bi-pencil"></i> Update Form
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let fieldCounter = 0;
+        const fixedOptions = ['Option 1', 'Option 2', 'Option 3', 'Option 4', 'Option 5'];
+
+        $(document).ready(function () {
+
+            // Load Existing Fields
+            const existingFields = @Html.Raw(JsonConvert.SerializeObject(Model.Fields));
+
+            if (existingFields.length > 0) {
+                existingFields.forEach(f => {
+                    addField(f.fieldLabel, f.selectedOption, f.isRequired);
+                });
+            } else {
+                addField();
+            }
+
+            // Add More Field
+            $('#addFieldBtn').on('click', function () {
+                addField();
+            });
+
+            // Submit Edit Form
+            $('#formBuilder').on('submit', function (e) {
+                e.preventDefault();
+
+                if (!this.checkValidity()) {
+                    $(this).addClass('was-validated');
+                    return false;
+                }
+
+                const formTitle = $('#formTitle').val().trim();
+                const fields = [];
+
+                $('.field-item').each(function () {
+                    const label = $(this).find('.field-label').val().trim();
+                    const option = $(this).find('.field-options').val();
+                    const required = $(this).find('.field-required').is(':checked');
+
+                    if (label && option) {
+                        fields.push({
+                            FieldLabel: label,
+                            SelectedOption: option,
+                            IsRequired: required
+                        });
+                    }
+                });
+
+                $.ajax({
+                    url: '@Url.Action("Edit", "Form")/' + @Model.FormId,
+                    type: 'POST',
+                    data: {
+                        formTitle: formTitle,
+                        fieldsJson: JSON.stringify(fields)
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            alert("Form updated successfully!");
+                            window.location.href = '@Url.Action("Index", "Form")';
+                        } else {
+                            alert(response.message);
+                        }
+                    },
+                    error: function () {
+                        alert("Error updating form.");
+                    }
+                });
+            });
+        });
+
+        function addField(label = "", selectedOption = "", isRequired = false) {
+            fieldCounter++;
+
+            const fieldHtml = `
+                <div class="card mb-3 field-item">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-4">
+                                <label class="form-label">Field Label <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control field-label" value="${label}" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">Select Option <span class="text-danger">*</span></label>
+                                <select class="form-select field-options" required>
+                                    <option value="">-- Choose Option --</option>
+                                    ${fixedOptions.map(opt => `
+                                        <option value="${opt}" ${opt === selectedOption ? "selected" : ""}>${opt}</option>
+                                    `).join('')}
+                                </select>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input field-required" type="checkbox" ${isRequired ? "checked" : ""}>
+                                    <label class="form-check-label">Required</label>
+                                </div>
+                            </div>
+                            <div class="col-md-2 text-end">
+                                <button type="button" class="btn btn-danger btn-sm mt-4 remove-field">
+                                    <i class="bi bi-trash"></i> Remove
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            $('#fieldsContainer').append(fieldHtml);
+        }
+
+        // Remove Field
+        $(document).on('click', '.remove-field', function () {
+            if ($('.field-item').length > 1) {
+                $(this).closest('.field-item').remove();
+            } else {
+                alert('At least one field is required.');
+            }
+        });
+    </script>
+}

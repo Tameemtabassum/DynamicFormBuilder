@@ -1,0 +1,60 @@
+﻿@model DynamicFormBuilder.Models.StudentModel
+
+<h2 class="text-center mb-4 text-warning fw-bold">Edit Student</h2>
+
+<div class="d-flex justify-content-center">
+    <div class="card shadow p-4 w-100"
+         style="max-width: 600px; border-left: 5px solid #ffc108;">
+
+        <form asp-action="Edit" method="post">
+
+            @* Hidden field for Id *@
+            <input type="hidden" asp-for="Id" />
+
+            <div class="mb-3">
+                <label asp-for="StudentName" class="form-label fw-semibold text-warning"></label>
+                <input asp-for="StudentName" class="form-control border-warning" />
+                <span asp-validation-for="StudentName" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Age" class="form-label fw-semibold text-warning"></label>
+                <input asp-for="Age" class="form-control border-warning" />
+                <span asp-validation-for="Age" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="PhoneNumber" class="form-label fw-semibold text-warning"></label>
+                <input asp-for="PhoneNumber" class="form-control border-warning" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Email" class="form-label fw-semibold text-warning"></label>
+                <input asp-for="Email" class="form-control border-warning" />
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Address" class="form-label fw-semibold text-warning"></label>
+                <input asp-for="Address" class="form-control border-warning" />
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Department" class="form-label fw-semibold text-warning"></label>
+                <input asp-for="Department" class="form-control border-warning" />
+            </div>
+
+            <button type="submit" class="btn btn-warning w-100 mt-2 fw-semibold">
+                Update Student
+            </button>
+
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

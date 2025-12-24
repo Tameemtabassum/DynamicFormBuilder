@@ -1,0 +1,86 @@
+﻿@model DynamicFormBuilder.ViewModels.CustomerViewModel
+
+@{
+    ViewData["Title"] = "Customer Details";
+}
+
+<div class="card shadow-lg p-4 mt-4" style="max-width: 700px; margin:auto;">
+    <h3 class="text-center mb-4">Customer Details</h3>
+
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="fw-bold">Full Name</label>
+            <input value="@Model.FullName" class="form-control" disabled />
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="fw-bold">Phone</label>
+            <input value="@Model.Phone" class="form-control" disabled />
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="fw-bold">Email</label>
+            <input value="@Model.Email" class="form-control" disabled />
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="fw-bold">NID</label>
+            <input value="@Model.NID" class="form-control" disabled />
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="fw-bold">Division</label>
+            <input value="@Model.DivisionName" class="form-control" disabled />
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="fw-bold">District</label>
+            <input value="@Model.DistrictName" class="form-control" disabled />
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="fw-bold">DOB</label>
+            <input value="@(Model.DOB?.ToString("yyyy-MM-dd"))" class="form-control" disabled />
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <label class="fw-bold">Profession</label>
+            <input value="@Model.Profession" class="form-control" disabled />
+        </div>
+
+        <div class="col-md-12 mb-4">
+            <label class="fw-bold">Current Balance</label>
+            <input id="CurrentBalance" value="@Model.Balance"
+                   class="form-control fw-bold text-success" disabled />
+        </div>
+    </div>
+
+    <!-- ADD BALANCE FORM -->
+    <form asp-action="AddBalance" method="post">
+        <input type="hidden" name="CustomerID" value="@Model.CustomerID" />
+
+        <div class="mb-3">
+            <label class="fw-bold">Add Balance</label>
+            <input id="AmountToAdd" name="AmountToAdd" type="number" step="0.01"
+                   class="form-control" required min="1" />
+        </div>
+
+        <div class="mb-3">
+            <label class="fw-bold">New Balance (Auto Calculation)</label>
+            <input id="NewBalance" class="form-control fw-bold text-primary" disabled />
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100 mt-2">Save New Balance</button>
+    </form>
+
+    <a asp-action="Index" class="btn btn-secondary w-100 mt-3">Back to List</a>
+</div>
+
+<script>
+    const current = parseFloat(@Model.Balance);
+
+    document.getElementById("AmountToAdd").addEventListener("input", function () {
+        let add = parseFloat(this.value) || 0;
+        document.getElementById("NewBalance").value = (current + add).toFixed(2);
+    });
+</script>
