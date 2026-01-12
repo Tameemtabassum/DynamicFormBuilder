@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Register DbContext
-builder.Services.AddDbContext<ApplicationDBContext>(options =>
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Add services
@@ -19,8 +19,10 @@ builder.Services.AddControllersWithViews();
 builder.Services.RegisterApplicationServices();
 //builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddScoped<FormRepository>();
-//builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+
 builder.Services.AddScoped<IParticipantsService, ParticipantsService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+
 
 
 
@@ -38,6 +40,6 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Customer}/{action=Index}/{id?}");
+    pattern: "{controller=Employee}/{action=Index}/{id?}");
 
 app.Run();

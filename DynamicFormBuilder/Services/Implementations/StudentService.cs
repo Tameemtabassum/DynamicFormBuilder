@@ -1,4 +1,5 @@
-﻿using DynamicFormBuilder.Data.DBContext;
+﻿using DocumentFormat.OpenXml.InkML;
+using DynamicFormBuilder.Data.DBContext; 
 using DynamicFormBuilder.Models;
 using DynamicFormBuilder.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -9,12 +10,15 @@ namespace DynamicFormBuilder.Services.Implementations
 {
     public class StudentService : IStudentService
     {
-        public readonly ApplicationDBContext _dbContext;
-        public StudentService(ApplicationDBContext dbContext) 
+        public readonly ApplicationDbContext _dbContext;
+        public StudentService(ApplicationDbContext dbContext) 
         {
             _dbContext = dbContext;
         }
 
+
+
+       
         public StudentModel GetStudentById(int id)
         {
             var student = _dbContext.StudentModels.Find(id);

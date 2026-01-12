@@ -1,11 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace DynamicFormBuilder.Models
+namespace DynamicFormBuilder.ViewModels
 {
-    [Table("Participants")]
-    public class ParticipantsModel
+    public class ParticipantsViewModel
     {
+
         public int Id { get; set; }
         [Required(ErrorMessage = "Name is required")]
         [StringLength(100)]
@@ -26,13 +25,3 @@ namespace DynamicFormBuilder.Models
 
     }
 }
-
-
-
-
-
-
-
-
-
-

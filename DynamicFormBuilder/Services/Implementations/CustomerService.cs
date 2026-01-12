@@ -8,9 +8,9 @@ namespace DynamicFormBuilder.Services.Implementations
 {
     public class CustomerService : ICustomerService
     {
-        private readonly ApplicationDBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
-        public CustomerService(ApplicationDBContext dbContext)
+        public CustomerService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }

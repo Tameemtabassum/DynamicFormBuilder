@@ -1,9 +1,16 @@
-﻿using DynamicFormBuilder.Models;
+﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.Spreadsheet;
+using DynamicFormBuilder.Models;
+using DynamicFormBuilder.Services.Implementations;
 using DynamicFormBuilder.Services.Interfaces;
+using DynamicFormBuilder.ViewModels;
 using Microsoft.AspNetCore.Mvc;
-using ClosedXML.Excel;
+using OfficeOpenXml;
+using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
+using X.PagedList.Extensions;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 
 namespace DynamicFormBuilder.Controllers
@@ -17,18 +24,21 @@ namespace DynamicFormBuilder.Controllers
             _participantsService = participantsService;
         }
 
-        public IActionResult Index(int page = 1, int pageSize = 10)
+        public IActionResult Index(int? page, int pageSize = 10)
         {
-            int total = _participantsService.Count();
-            var data = _participantsService.GetPage(page, pageSize);
-
-            ViewBag.CurrentPage = page;
-            ViewBag.PageSize = pageSize;
-            ViewBag.TotalPages = (int)Math.Ceiling(total / (double)pageSize);
-
-            return View(data);
+            var participants = _participantsService.GetAllParticipants();
+            var participantsList = participants
+                .Select(p => new ParticipantsViewModel
+                {
+                    Name = p.Name,
+                    Address = p.Address,
+                    Country = p.Country,
+                    Email = p.Email,
+                    Phone = p.Phone,
+                    Id = p.Id
+                });
+            return View(participantsList.ToPagedList(page??1,pageSize));
         }
-
 
 
         public IActionResult Create()
@@ -36,7 +46,7 @@ namespace DynamicFormBuilder.Controllers
             return View();
         }
 
-      
+
         [HttpPost]
         public IActionResult Create(ParticipantsModel model)
         {
@@ -50,7 +60,7 @@ namespace DynamicFormBuilder.Controllers
             return View(model);
         }
 
-     
+
         public IActionResult Edit(int id)
         {
             var participant = _participantsService.GetParticipantById(id);
@@ -61,7 +71,7 @@ namespace DynamicFormBuilder.Controllers
             return View(participant);
         }
 
-       
+
         [HttpPost]
         public IActionResult Edit(ParticipantsModel model)
         {
@@ -74,7 +84,7 @@ namespace DynamicFormBuilder.Controllers
             return View(model);
         }
 
-        // GET: Participants/Delete/5
+        
         public IActionResult Delete(int id)
         {
             var participant = _participantsService.GetParticipantById(id);
@@ -82,10 +92,10 @@ namespace DynamicFormBuilder.Controllers
             if (participant == null)
                 return NotFound();
 
-            return View(participant); 
+            return View(participant);
         }
 
-        
+
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(int id)
@@ -94,7 +104,7 @@ namespace DynamicFormBuilder.Controllers
             return RedirectToAction("Index");
         }
 
-       
+
         public IActionResult Details(int id)
         {
             var participant = _participantsService.GetParticipantById(id);
@@ -169,6 +179,93 @@ namespace DynamicFormBuilder.Controllers
                 }
             }
         }
-    }
+        public IActionResult UploadExcel()
+        {
+            return View();
+        }
 
+        [HttpPost]
+        public async Task<IActionResult> UploadExcel(IFormFile file)
+        {
+            if (file == null || file.Length == 0)
+            {
+                TempData["Message"] = "No file selected!";
+                return RedirectToAction("Index");
+            }
+
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            if (extension != ".xlsx")
+            {
+                TempData["Message"] = "Please upload a valid Excel file (.xlsx)";
+                return RedirectToAction("Index");
+            }
+
+            int updated = 0;
+            int notFound = 0;
+
+            try
+            {
+                using var stream = new MemoryStream();
+                await file.CopyToAsync(stream);
+                stream.Position = 0;
+
+
+                ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
+               
+                using var package = new ExcelPackage(stream);
+                var sheet = package.Workbook.Worksheets.FirstOrDefault();
+
+                if (sheet == null || sheet.Dimension == null)
+                {
+                    TempData["Message"] = "Excel file is empty or invalid!";
+                    return RedirectToAction("Index");
+                }
+
+                int rows = sheet.Dimension.Rows;
+                var allParticipants = _participantsService.GetAllParticipants()?.ToList();
+
+                if (allParticipants == null || !allParticipants.Any())
+                {
+                    TempData["Message"] = "No participants in database!";
+                    return RedirectToAction("Index");
+                }
+
+                // Process each row (skip header row 1)
+                for (int row = 2; row <= rows; row++)
+                {
+                    string phoneFromExcel = sheet.Cells[row, 4].Text?.Trim();
+                    string countryFromExcel = sheet.Cells[row, 6].Text?.Trim();
+
+                  
+                    if (string.IsNullOrWhiteSpace(phoneFromExcel))
+                        continue;
+
+                    // Find participant by phone number - EXACT MATCH ONLY
+                    var participant = allParticipants.FirstOrDefault(p =>
+                        p.Phone == phoneFromExcel);
+
+                    if (participant != null)
+                    {
+                        
+                        participant.Country = countryFromExcel;
+                        _participantsService.UpdateParticipant(participant);
+                        updated++;
+                    }
+                    else
+                    {
+                       
+                        notFound++;
+                    }
+                }
+
+                TempData["Message"] = $"✓ {updated} participants updated. {notFound} phone numbers not found.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Message"] = $"Error: {ex.Message}";
+            }
+
+            return RedirectToAction("Index");
+        }
+    }
 }

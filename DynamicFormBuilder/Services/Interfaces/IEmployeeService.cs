@@ -1,14 +1,18 @@
 ﻿using DynamicFormBuilder.Models;
-using System.Collections.Generic;
 
-namespace DynamicFormBuilder.Services
+namespace DynamicFormBuilder.Services.Interfaces
 {
     public interface IEmployeeService
     {
-        List<EmployeeModel> GetAllEmployees();
-        EmployeeModel GetEmployeeById(int id);
-        void AddEmployee(EmployeeModel employee);
-        void UpdateEmployee(EmployeeModel employee);
-        void DeleteEmployee(int id);
+        IEnumerable<EmployeeModel> GetAll();
+        EmployeeModel GetById(string id);
+        void Create(EmployeeModel employee);
+        public void Update(EmployeeModel employee);
+        void Delete(string id); bool IsEmployeeIdExist(string employeeId);
+        EmployeeModel GetEmployeeDataByEmployeeId(string employeeId);
+        IEnumerable<EmployeeChangeHistoriesModel> GetEmployeeChangeHistoryRecord(string mainTableId);
+
+
     }
 }
+

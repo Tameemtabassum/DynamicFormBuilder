@@ -124,41 +124,41 @@ namespace DynamicFormBuilder.Controllers
         }
 
 
-        //[HttpPost]
-        //public IActionResult Edit(int id, string formTitle, string fieldsJson)
-        //{
-        //    try
-        //    {
-        //        // Deserialize the fields JSON
-        //        var fields = System.Text.Json.JsonSerializer.Deserialize<List<FormFieldModel>>(fieldsJson);
+        [HttpPost]
+        public IActionResult Edit(int id, string formTitle, string fieldsJson)
+        {
+            try
+            {
+                // Deserialize the fields JSON
+                var fields = System.Text.Json.JsonSerializer.Deserialize<List<FormFieldModel>>(fieldsJson);
 
-        //        if (string.IsNullOrWhiteSpace(formTitle))
-        //            return Json(new { success = false, message = "Form title is required." });
+                if (string.IsNullOrWhiteSpace(formTitle))
+                    return Json(new { success = false, message = "Form title is required." });
 
-        //        if (fields == null || fields.Count == 0)
-        //            return Json(new { success = false, message = "At least one field is required." });
+                if (fields == null || fields.Count == 0)
+                    return Json(new { success = false, message = "At least one field is required." });
 
-        //        // Update form title
-        //        _repository.UpdateForm(id, formTitle);
+                // Update form title
+                _repository.UpdateForm(id, formTitle);
 
-        //        // Remove old fields
-        //        //_repository.DeleteFormFields(id);
+                // Remove old fields
+                //_repository.DeleteFormFields(id);
+                
+                // Insert updated fields
+                for (int i = 0; i < fields.Count; i++)
+                {
+                    fields[i].FormId = id;
+                    fields[i].FieldOrder = i + 1;
+                    _repository.InsertFormField(fields[i]);
+                }
 
-        //        // Insert updated fields
-        //        for (int i = 0; i < fields.Count; i++)
-        //        {
-        //            fields[i].FormId = id;
-        //            fields[i].FieldOrder = i + 1;
-        //            _repository.InsertFormField(fields[i]);
-        //        }
-
-        //        return Json(new { success = true, message = "Form updated successfully!" });
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Json(new { success = false, message = "Error: " + ex.Message });
-        //    }
-        //}
+                return Json(new { success = true, message = "Form updated successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error: " + ex.Message });
+            }
+        }
 
 
 

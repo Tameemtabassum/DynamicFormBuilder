@@ -4,6 +4,7 @@ using DynamicFormBuilder.Data;
 using DynamicFormBuilder.Models;
 using DynamicFormBuilder.Services.Implementations;
 using DynamicFormBuilder.Services.Interfaces;
+using DynamicFormBuilder.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Identity.Client;
@@ -14,6 +15,7 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Net;
+using X.PagedList.Extensions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 
@@ -26,8 +28,13 @@ public class CustomerController : Controller
         _customerService = customerService;
     }
 
-    public IActionResult Index(string phone, int? divisionId, int pageNumber = 1, int pageSize = 10)
+    public IActionResult Index(string phone, int? divisionId, int page = 1, int pageSize = 10)
     {
+        // Store filter values in ViewBag
+        ViewBag.Phone = phone;
+        ViewBag.DivisionId = divisionId;
+
+        // divisions for dropdown
         var divisions = _customerService.GetAllDivision() ?? new List<DivisionModel>();
         ViewBag.DivisionList = divisions.Select(d => new SelectListItem
         {
@@ -35,29 +42,10 @@ public class CustomerController : Controller
             Text = d.DivisionName
         }).ToList();
 
+        // filtered customers
         var allCustomers = _customerService.GetAllSearchCustomer(phone, divisionId);
-
-        var totalRecords = allCustomers.Count();
-        var totalPages = (int)Math.Ceiling(totalRecords / (double)pageSize);
-
-        var customers = allCustomers
-            .Skip((pageNumber - 1) * pageSize)
-            .Take(pageSize)
-            .ToList();
-
-        ViewBag.SearchPhone = phone;
-        ViewBag.SearchDivisionId = divisionId;
-        ViewBag.CurrentPage = pageNumber;
-        ViewBag.TotalPages = totalPages;
-        ViewBag.TotalRecords = totalRecords;
-        ViewBag.PageSize = pageSize; // Send page size to view
-
-        // Optional: predefined page size options
-        ViewBag.PageSizeOptions = new List<int> { 5, 10, 20, 50 };
-
-        return View(customers);
+        return View(allCustomers.ToPagedList(page, pageSize));
     }
-
 
     public IActionResult Create()
     {

@@ -10,13 +10,15 @@ namespace DynamicFormBuilder.Services.Implementations
 {
     public class ParticipantsService : IParticipantsService
     {
-        private readonly ApplicationDBContext _dbContext;
+        private readonly ApplicationDbContext _dbContext;
 
-        public ParticipantsService(ApplicationDBContext dbContext)
+        public ParticipantsService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
+
+      
         public List<ParticipantsModel> GetAllParticipants()
         {
       

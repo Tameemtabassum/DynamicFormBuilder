@@ -2,7 +2,9 @@
 using DynamicFormBuilder.Models;
 using DynamicFormBuilder.Services.Implementations;
 using DynamicFormBuilder.Services.Interfaces;
+using DynamicFormBuilder.ViewModels;
 using Microsoft.AspNetCore.Mvc;
+using X.PagedList.Extensions;
 
 
 public class StudentsController : Controller
@@ -18,13 +20,39 @@ public class StudentsController : Controller
     }
 
     // GET: Students/Index
-    public IActionResult Index()
+    public IActionResult Index(string name, string email, int page = 1, int pageSize = 10)
     {
-        var students = _studentService.GetAllStudents();
-        return View(students);
+        // Store filter values in ViewBag
+        ViewBag.Name = name;
+        ViewBag.Email = email;
+
+        IEnumerable<StudentModel> students = _studentService.GetAllStudents();
+
+        // Apply filters if needed
+        if (!string.IsNullOrEmpty(name))
+        {
+            students = students.Where(s => s.StudentName.Contains(name)); 
+        }
+
+        if (!string.IsNullOrEmpty(email))
+        {
+            students = students.Where(s => s.Email.Contains(email));
+        }
+
+        // Map to ViewModel 
+        var studentViewModels = students.Select(s => new StudentViewModel
+        {
+            Id = s.Id,
+            StudentName = s.StudentName,
+            Age = s.Age,
+            PhoneNumber = s.PhoneNumber,
+            Email = s.Email,
+            Address = s.Address,
+            Department = s.Department
+        }).ToList(); 
+
+        return View(studentViewModels.ToPagedList(page, pageSize));
     }
-
-
 
     // GET: Students/Create
     public IActionResult Create()

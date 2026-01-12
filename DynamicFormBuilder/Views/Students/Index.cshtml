@@ -1,14 +1,28 @@
-﻿@model IEnumerable<DynamicFormBuilder.Models.StudentModel>
-@using DynamicFormBuilder.Models
-
+﻿@using DynamicFormBuilder.ViewModels
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<DynamicFormBuilder.ViewModels.StudentViewModel>
 @{
     ViewData["Title"] = "Students List";
 }
 
 <h2 class="mb-3">Students List</h2>
 
-<a asp-action="Create" class="btn btn-primary mb-3">+ Register New Student</a>
-<a class="btn btn-success" asp-action="DownloadFile">Download</a>
+
+
+<div class="mb-3 d-flex gap-2">
+    <a asp-action="Create" class="btn btn-primary">
+        + Register New Student
+    </a>
+
+    <a asp-action="Create"
+       asp-controller="Students"
+       class="btn btn-success">
+        Download
+    </a>
+</div>
+
+
  
 @if (Model != null && Model.Any())
 {
@@ -52,3 +66,18 @@ else
         No students found. Click <strong>Register New Student</strong> to add one.
     </div>
 }
+
+
+
+<!-- Pagination Controls - Always Show -->
+<div class="mx-2 my-2">
+    @Html.PaginationFor(
+    Model,
+    page => Url.Action("Index", new
+    {
+        
+        page,
+        pageSize = Model.PageSize
+    })
+        )
+</div>

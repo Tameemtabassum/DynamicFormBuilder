@@ -1,5 +1,6 @@
 ﻿<!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -14,20 +15,123 @@
     <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" />
 
+    <!-- Site CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+
+    <!-- Pagination JS -->
+    <link rel="stylesheet" href="~/css/site.js" asp-append-version="true" />
 
     <style>
         body {
-            background-color: #f8f9fa;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
         }
 
-        .navbar {
-            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: linear-gradient(180deg, #1e3a8a 0%, #1e40af 100%);
+            padding-top: 0;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-brand {
+            padding: 20px 20px;
+            color: white;
+            font-size: 1.3rem;
+            font-weight: bold;
+            text-decoration: none;
+            display: block;
+            background-color: rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+            .sidebar-brand:hover {
+                color: #ffffff;
+                background-color: rgba(0,0,0,0.3);
+            }
+
+            .sidebar-brand i {
+                margin-right: 8px;
+            }
+
+        .sidebar-nav {
+            list-style: none;
+            padding: 0 10px;
+            margin: 0;
+        }
+
+            .sidebar-nav li {
+                margin: 5px 0;
+            }
+
+            .sidebar-nav a {
+                display: flex;
+                align-items: center;
+                padding: 14px 16px;
+                color: rgba(255,255,255,0.9);
+                text-decoration: none;
+                transition: all 0.3s ease;
+                border-radius: 8px;
+                font-size: 0.95rem;
+            }
+
+                .sidebar-nav a:hover {
+                    background-color: rgba(255,255,255,0.15);
+                    color: white;
+                    transform: translateX(5px);
+                }
+
+                .sidebar-nav a.active {
+                    background-color: #3b82f6;
+                    color: white;
+                    box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);
+                }
+
+                .sidebar-nav a i {
+                    margin-right: 12px;
+                    width: 20px;
+                    font-size: 1.1rem;
+                }
+
+        /* Main Content Area */
+        .main-content {
+            margin-left: 260px;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-wrapper {
+            padding: 25px;
+            flex: 1;
+            overflow-x: auto;
+        }
+
+        /* Table */
+        .table-responsive {
+            overflow-x: auto;
+        }
+
+        /* Footer */
+        .footer {
+            background-color: white;
+            padding: 20px;
+            margin-top: 40px;
+            border-top: 1px solid #e5e7eb;
         }
 
         .card {
-            box-shadow: 0 0 10px rgba(0,0,0,.1);
+            box-shadow: 0 1px 3px rgba(0,0,0,.1);
             border: none;
+            border-radius: 10px;
         }
 
         .field-item {
@@ -39,70 +143,115 @@
             }
 
         .table-striped tbody tr:hover {
-            background-color: #e9ecef;
+            background-color: #f3f4f6;
+        }
+
+        /* Page Title Styling */
+        h1, h2 {
+            color: #1e3a8a;
+            font-weight: 600;
+        }
+
+        /* Button Styling */
+        .btn-primary {
+            background: linear-gradient(135deg, #2563eb 0%, #3b82f6 100%);
+            border: none;
+        }
+
+            .btn-primary:hover {
+                background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+            }
+
+        .btn-success {
+            background: linear-gradient(135deg, #059669 0%, #10b981 100%);
+            border: none;
+        }
+
+            .btn-success:hover {
+                background: linear-gradient(135deg, #047857 0%, #059669 100%);
+            }
+
+        /* Ensure content doesn't overflow */
+        .container-fluid {
+            max-width: 100%;
+            overflow-x: hidden;
         }
     </style>
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-dark bg-dark mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Form" asp-action="Index">
-                    <i class="bi bi-file-earmark-text"></i> Dynamic Form Builder
-                </a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Form" asp-action="Index">
-                                <i class="bi bi-list-ul"></i> Forms List
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Students" asp-action="Index">
-                                <i class="bi bi-list-ul"></i> Student List
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Employees" asp-action="Index">
-                                <i class="bi bi-list-ul"></i> Employee List
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Customer" asp-action="Index">
-                                <i class="bi bi-list-ul"></i> Customer List
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="Participants" asp-action="Index">
-                                <i class="bi bi-list-ul"></i> Participant List
-                            </a>
-                        </li>
-                        @* <li class="nav-item">
-                            <a class="nav-link" asp-area="" asp-controller="form" asp-action="create">
-                                <i class="bi bi-plus-circle"></i> create form
-                            </a>
-                        </li> *@
-                    </ul>
+
+@if (TempData["success"] != null)
+{
+    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+        <div id="successToast"
+             class="toast align-items-center text-bg-success border-0"
+             role="alert"
+             aria-live="assertive"
+             aria-atomic="true">
+
+            <div class="d-flex">
+                <div class="toast-body">
+                    <i class="bi bi-check-circle-fill me-2"></i>
+                    @TempData["success"]
                 </div>
+                <button type="button"
+                        class="btn-close btn-close-white me-2 m-auto"
+                        data-bs-dismiss="toast"
+                        aria-label="Close"></button>
             </div>
-        </nav>
-    </header>
 
-    <div class="container-fluid">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <footer class="border-top footer text-muted">
-        <div class="container text-center">
-            &copy; 2025 - Dynamic Form Builder - <a asp-area="" asp-controller="Form" asp-action="Index">Home</a>
         </div>
-    </footer>
+    </div>
+}
+
+<body>
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <a class="sidebar-brand" asp-area="" asp-controller="Form" asp-action="Index">
+            <i class="bi bi-file-earmark-text"></i> Dynamic Form Builder
+        </a>
+        <ul class="sidebar-nav">
+            <li>
+                <a asp-area="" asp-controller="Form" asp-action="Index">
+                    <i class="bi bi-list-ul"></i> Forms List
+                </a>
+            </li>
+            <li>
+                <a asp-area="" asp-controller="Students" asp-action="Index">
+                    <i class="bi bi-people"></i> Student List
+                </a>
+            </li>
+            <li>
+                <a asp-area="" asp-controller="Customer" asp-action="Index">
+                    <i class="bi bi-person-badge"></i> Customer List
+                </a>
+            </li>
+            <li>
+                <a asp-area="" asp-controller="Participants" asp-action="Index">
+                    <i class="bi bi-person-check"></i> Participant List
+                </a>
+            </li>
+            <li>
+                <a asp-area="" asp-controller="Employee" asp-action="Index">
+                    <i class="bi bi-briefcase"></i> Employee List
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <main role="main">
+            <div class="content-wrapper">
+                @RenderBody()
+            </div>
+        </main>
+
+        <footer class="footer text-muted">
+            <div class="container-fluid text-center">
+                &copy; 2026 - Tameem - <a asp-area="" asp-controller="Form" asp-action="Index">Home</a>
+            </div>
+        </footer>
+    </div>
 
     <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
@@ -114,8 +263,41 @@
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
+    <!-- Site JS -->
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+
+
+    <script>
+        // Highlight active menu
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname.toLowerCase();
+            const menuLinks = document.querySelectorAll('.sidebar-nav a');
+
+            menuLinks.forEach(link => {
+                const linkPath = link.getAttribute('href');
+                if (linkPath && currentPath.includes(linkPath.toLowerCase().split('/').pop())) {
+                    link.classList.add('active');
+                }
+            });
+        });
+    </script>
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>
+
+@if (TempData["success"] != null)
+{
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var toastEl = document.getElementById('successToast');
+            if (toastEl) {
+                var toast = new bootstrap.Toast(toastEl, {
+                    delay: 3000
+                });
+                toast.show();
+            }
+        });
+    </script>
+}
 </html>

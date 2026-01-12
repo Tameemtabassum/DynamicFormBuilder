@@ -8,9 +8,10 @@ namespace DynamicFormBuilder.Services
         public static IServiceCollection RegisterApplicationServices(this IServiceCollection services)
         {
             services.AddScoped<IStudentService, StudentService>();
-            services.AddScoped<IEmployeeService, EmployeeService>();
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IParticipantsService, ParticipantsService>();
+            services.AddScoped<IEmployeeService, EmployeeService>();
+
 
 
 

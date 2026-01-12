@@ -143,5 +143,10 @@ namespace DynamicFormBuilder.Data
 
             return form;
         }
+
+        internal void UpdateForm(int id, string formTitle)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

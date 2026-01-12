@@ -1,5 +1,8 @@
-﻿@model IEnumerable<DynamicFormBuilder.Models.ParticipantsModel>
-@using DynamicFormBuilder.Models
+﻿@using DynamicFormBuilder.ViewModels
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<DynamicFormBuilder.ViewModels.ParticipantsViewModel>
+
 @{
     ViewData["Title"] = "Participants List";
 }
@@ -9,15 +12,24 @@
     <div>
         <a asp-action="Create" class="btn btn-primary">+ Add New Participant</a>
         <a asp-action="ExcelDownload" class="btn btn-success">Download Participants list</a>
+        <a href="@Url.Action("UploadExcel")" class="btn btn-primary">Upload Excel</a>
     </div>
-    <div style="width: 300px;">
+    <form method="get" asp-action="Index" class="d-flex gap-2" style="width: 400px;">
         <input type="text"
-               id="searchInput"
+               name="searchQuery"
+               value="@ViewBag.SearchQuery"
                class="form-control"
                placeholder="Search participants..."
                autocomplete="off">
-    </div>
+        <button type="submit" class="btn btn-secondary">Search</button>
+        @if (!string.IsNullOrWhiteSpace(ViewBag.SearchQuery))
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
+        }
+    </form>
 </div>
+
+
 
 @if (Model != null && Model.Any())
 {
@@ -30,7 +42,7 @@
                 <th>Phone</th>
                 <th>Address</th>
                 <th>Country</th>
-                <th style="width:180px;">Actions</th>
+                <th style="width:150px;">Actions</th>
             </tr>
         </thead>
         <tbody>
@@ -68,86 +80,21 @@
         </tbody>
     </table>
 
-
-    <nav>
-        <ul class="pagination">
-            <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
-                <a class="page-link"
-                   href="?page=@(ViewBag.CurrentPage - 1)&pageSize=@ViewBag.PageSize">
-                    Previous
-                </a>
-            </li>
-
-            @for (int i = 1; i <= ViewBag.TotalPages; i++)
-            {
-                <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
-                    <a class="page-link"
-                       href="?page=@i&pageSize=@ViewBag.PageSize">
-                        @i
-                    </a>
-                </li>
-            }
-
-            <li class="page-item @(ViewBag.CurrentPage == ViewBag.TotalPages ? "disabled" : "")">
-                <a class="page-link"
-                   href="?page=@(ViewBag.CurrentPage + 1)&pageSize=@ViewBag.PageSize">
-                    Next
-                </a>
-            </li>
-        </ul>
-    </nav>
-
-    <div id="noResults" class="alert alert-warning" style="display: none;">
-        No participants found matching your search.
-    </div>
-}
-else
-{
-    <div class="alert alert-info">
-        No participants found. Click <strong>Add New Participant</strong> to add one.
-    </div>
 }
 
-@section Scripts {
-    <script>
-        document.getElementById('searchInput').addEventListener('keyup', function() {
-            const searchText = this.value.toLowerCase();
-            const table = document.getElementById('participantsTable');
-            const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-            let visibleCount = 0;
+<!-- Pagination Controls -->
 
-            for (let i = 0; i < rows.length; i++) {
-                const row = rows[i];
-                const cells = row.getElementsByTagName('td');
-                let found = false;
 
-                
-                for (let j = 0; j < 6; j++) {
-                    const cellText = cells[j].textContent.toLowerCase();
-                    if (cellText.includes(searchText)) {
-                        found = true;
-                        break;
-                    }
-                }
-                
-                if (found) {
-                    row.style.display = '';
-                    visibleCount++;
-                } else {
-                    row.style.display = 'none';
-                }
-            }
+    <div class="mx-2 my-2">
+        @Html.PaginationFor(
+        Model,
+        page => Url.Action("Index", new
+        {
+           
+            page,
+            pageSize = Model.PageSize
+        })
+        )
+</div>
+             
 
-            // Show/hide "no results" message
-            const noResults = document.getElementById('noResults');
-            if (visibleCount === 0 && searchText !== '') {
-                noResults.style.display = 'block';
-                table.style.display = 'none';
-            } 
-            else {
-                noResults.style.display = 'none';
-                table.style.display = 'table';
-            }
-        });
-    </script>
-}

@@ -1,0 +1,168 @@
+﻿@using DynamicFormBuilder.ViewModels
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<DynamicFormBuilder.ViewModels.EmployeeViewModel>
+@{
+    ViewData["Title"] = "Employee List";
+}
+<h2 class="mb-3">Employee List</h2>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div class="mb-3 d-flex gap-2">
+        <a asp-action="Create" class="btn btn-primary">
+            + Create Employee
+        </a>
+        <a asp-action="EmployeeStatusUpdateBulkUpload"
+           asp-controller="Employee"
+           class="btn btn-success">
+            📤 Upload Excel
+        </a>
+    </div>
+    <div class="d-flex gap-2" style="width: 400px;">
+        <input type="text"
+               id="searchInput"
+               value="@ViewBag.SearchEmail"
+               class="form-control"
+               placeholder="Search employees..."
+               autocomplete="off">
+        @if (!string.IsNullOrWhiteSpace(ViewBag.SearchEmail))
+        {
+            <a asp-action="Index" class="btn btn-outline-secondary" id="clearBtn">Clear</a>
+        }
+    </div>
+</div>
+
+<div id="employeesContainer">
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Employee ID</th>
+                <th>Full Name</th>
+                <th>Email</th>
+                <th>Designation</th>
+                <th>Status</th>
+                <th style="width:180px;">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.EmployeeId</td>
+                        <td>@item.FullName</td>
+                        <td>@item.Email</td>
+                        <td>@item.Designation</td>
+                        <td>
+                            <span class="badge @(item.IsActive == true ? "bg-success" : "bg-danger")">
+                                @(item.IsActive == true ? "Active" : "InActive")
+                            </span>
+                        </td>
+                        <td style="white-space: nowrap;">
+                            <a asp-action="Edit"
+                               asp-route-id="@item.Id"
+                               class="btn btn-sm btn-warning">
+                                Edit
+                            </a>
+                            <a asp-action="Delete"
+                               asp-route-id="@item.Id"
+                               class="btn btn-sm btn-danger">
+                                Delete
+                            </a>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="6" class="text-center text-muted">
+                        No employees found.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination Controls -->
+<div class="mx-2 my-2" id="paginationContainer">
+    @Html.PaginationFor(
+    Model,
+    page => Url.Action("Index", new
+    {
+        page,
+        pageSize = Model.PageSize,
+        email = ViewBag.SearchEmail
+    })
+        )
+</div>
+
+@section Scripts {
+    <script>
+        let searchTimeout;
+
+        $('#searchInput').on('input', function() {
+            clearTimeout(searchTimeout);
+            const email = $(this).val();
+
+            // Debounce: wait 500ms after user stops typing
+            searchTimeout = setTimeout(function() {
+                loadEmployees(email, 1);
+            }, 500);
+        });
+
+        function loadEmployees(email, page) {
+            $.ajax({
+                url: '@Url.Action("Index")',
+                type: 'GET',
+                data: {
+                    email: email,
+                    page: page,
+                    pageSize: @Model.PageSize
+                },
+                success: function(result) {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(result, 'text/html');
+
+                    // Update table
+                    const newTable = doc.querySelector('#employeesContainer');
+                    if (newTable) {
+                        $('#employeesContainer').html(newTable.innerHTML);
+                    }
+
+                    // Update pagination
+                    const newPagination = doc.querySelector('#paginationContainer');
+                    if (newPagination) {
+                        $('#paginationContainer').html(newPagination.innerHTML);
+                    }
+
+                    // Update clear button
+                    if (email) {
+                        if ($('#clearBtn').length === 0) {
+                            $('.d-flex.gap-2').append('<a href="@Url.Action("Index")" class="btn btn-outline-secondary" id="clearBtn">Clear</a>');
+                        }
+                    } else {
+                        $('#clearBtn').remove();
+                    }
+                },
+                error: function() {
+                    alert('Error loading employees');
+                }
+            });
+        }
+
+        // Handle pagination clicks
+        $(document).on('click', '#paginationContainer a', function(e) {
+            e.preventDefault();
+            const url = $(this).attr('href');
+            const email = $('#searchInput').val();
+
+            // Extract page number from URL
+            const urlParams = new URLSearchParams(url.split('?')[1]);
+            const page = urlParams.get('page') || 1;
+
+            loadEmployees(email, page);
+        });
+    </script>
+}

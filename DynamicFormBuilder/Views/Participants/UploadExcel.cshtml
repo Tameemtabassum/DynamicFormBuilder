@@ -1,0 +1,43 @@
+﻿@{
+    ViewData["Title"] = "Upload Excel";
+}
+
+<h2>Upload Excel File </h2>
+
+@if (TempData["Message"] != null)
+{
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        @TempData["Message"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h5 class="card-title">Instructions:</h5>
+        <ol>
+            <li>Download the current participants list using the "Download Participants list" button</li>
+            <li>Update the <strong>Country</strong> column in the Excel file</li>
+            <li>Keep the <strong>Phone</strong> column unchanged (used for matching)</li>
+            <li>Upload the modified Excel file below</li>
+        </ol>
+
+        <form asp-action="UploadExcel" method="post" enctype="multipart/form-data" class="mt-4">
+            <div class="mb-3">
+                <label for="file" class="form-label">Select Excel File (.xlsx)</label>
+                <input type="file"
+                       class="form-control"
+                       id="file"
+                       name="file"
+                       accept=".xlsx"
+                       required />
+            </div>
+            <button type="submit" class="btn btn-success">Upload and Update</button>
+            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a asp-action="Index" class="btn btn-outline-primary">← Back to Participants List</a>
+</div>
