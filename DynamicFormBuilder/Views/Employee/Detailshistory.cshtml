@@ -1,0 +1,33 @@
+﻿@model EmployeeModel
+
+@{
+    ViewData["Title"] = "Employee Change History Details";
+}
+
+<h2>@ViewData["Title"]</h2>
+
+<div class="card p-3 shadow-sm mb-3">
+    <dl class="row">
+        <dt class="col-sm-3">Employee ID</dt>
+        <dd class="col-sm-9">@Model.EmployeeId</dd>
+
+        <dt class="col-sm-3">Full Name</dt>
+        <dd class="col-sm-9">@Model.FullName</dd>
+
+        <dt class="col-sm-3">Email</dt>
+        <dd class="col-sm-9">@Model.Email</dd>
+
+        <dt class="col-sm-3">Date of Birth</dt>
+        <dd class="col-sm-9">
+            @(Model.DOB.HasValue? Model.DOB.Value.ToString("yyyy-MM-dd") : "N/A")
+        </dd>
+
+        <dt class="col-sm-3">Designation</dt>
+        <dd class="col-sm-9">@Model.Designation</dd>
+
+        <dt class="col-sm-3">Is Active</dt>
+        <dd class="col-sm-9">@Model.IsActive ? "Yes" : "No"</dd>
+    </dl>
+</div>
+
+<a class="btn btn-secondary" href="@Url.Action("Index", "EmployeeController")">Back to List</a>

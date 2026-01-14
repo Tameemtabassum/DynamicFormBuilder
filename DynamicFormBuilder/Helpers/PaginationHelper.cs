@@ -121,7 +121,7 @@ namespace DynamicFormBuilder.ViewModels
             // Right side: Go to page
             builder.Append("<div class='go-to-page d-flex align-items-center gap-2'>");
             builder.Append($"<input type='number' id='goToPageInput' class='form-control form-control-sm' style='width: 70px;' min='1' max='{pagedList.PageCount}' placeholder='Page' />");
-            builder.Append($"<button class='btn btn-sm btn-primary' style='background:#E1136E;border:#E1136E;' onclick=\"goToPageDirect('{urlWithoutPage}', {pagedList.PageCount})\">Go</button>");
+            builder.Append($"<button class='btn btn-sm btn-primary' style='background:#038cfc;border:#E1136E;' onclick=\"goToPageDirect('{urlWithoutPage}', {pagedList.PageCount})\">Go</button>");
             builder.Append("</div>");
 
             builder.Append("</div>");

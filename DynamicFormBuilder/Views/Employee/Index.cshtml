@@ -5,164 +5,241 @@
 @{
     ViewData["Title"] = "Employee List";
 }
+
 <h2 class="mb-3">Employee List</h2>
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <div class="mb-3 d-flex gap-2">
-        <a asp-action="Create" class="btn btn-primary">
-            + Create Employee
-        </a>
-        <a asp-action="EmployeeStatusUpdateBulkUpload"
-           asp-controller="Employee"
-           class="btn btn-success">
-            📤 Upload Excel
-        </a>
-    </div>
-    <div class="d-flex gap-2" style="width: 400px;">
+
+<div class="mb-3 d-flex gap-2">
+    <a asp-action="Create" class="btn btn-primary">
+        + Create Employee
+    </a>
+    <a asp-action="EmployeeStatusUpdateBulkUpload"
+       asp-controller="Employee"
+       class="btn btn-success">
+        📤 Upload Excel
+    </a>
+</div>
+    <div style="width: 300px;">
         <input type="text"
                id="searchInput"
-               value="@ViewBag.SearchEmail"
                class="form-control"
                placeholder="Search employees..."
                autocomplete="off">
-        @if (!string.IsNullOrWhiteSpace(ViewBag.SearchEmail))
-        {
-            <a asp-action="Index" class="btn btn-outline-secondary" id="clearBtn">Clear</a>
-        }
     </div>
+
+    <!-- Add this container below the search input -->
+    <div id="searchResults" style="margin-top: 10px; max-height: 400px; overflow-y: auto;"></div>
+
 </div>
 
-<div id="employeesContainer">
-    <table class="table table-bordered table-striped">
-        <thead class="table-dark">
-            <tr>
-                <th>Employee ID</th>
-                <th>Full Name</th>
-                <th>Email</th>
-                <th>Designation</th>
-                <th>Status</th>
-                <th style="width:180px;">Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (Model != null && Model.Any())
-            {
-                foreach (var item in Model)
-                {
-                    <tr>
-                        <td>@item.EmployeeId</td>
-                        <td>@item.FullName</td>
-                        <td>@item.Email</td>
-                        <td>@item.Designation</td>
-                        <td>
-                            <span class="badge @(item.IsActive == true ? "bg-success" : "bg-danger")">
-                                @(item.IsActive == true ? "Active" : "InActive")
-                            </span>
-                        </td>
-                        <td style="white-space: nowrap;">
-                            <a asp-action="Edit"
-                               asp-route-id="@item.Id"
-                               class="btn btn-sm btn-warning">
-                                Edit
-                            </a>
-                            <a asp-action="Delete"
-                               asp-route-id="@item.Id"
-                               class="btn btn-sm btn-danger">
-                                Delete
-                            </a>
-                        </td>
-                    </tr>
-                }
-            }
-            else
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Employee ID</th>
+            <th>Full Name</th>
+            <th>Email</th>
+            <th>Designation</th>
+            <th>Status</th>
+            <th style="width:180px;">Action</th>  
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var item in Model)
             {
                 <tr>
-                    <td colspan="6" class="text-center text-muted">
-                        No employees found.
+                    <td>@item.EmployeeId</td>
+                    <td>@item.FullName</td>
+                    <td>@item.Email</td>
+                    <td>@item.Designation</td>
+                    <td>
+                        <span class="badge @(item.IsActive == true ? "bg-success" : "bg-danger")">
+                            @(item.IsActive == true ? "Active" : "InActive")
+                        </span>
+                    </td>
+                    <td style="white-space: nowrap;">
+                        @* Prevent button wrapping *@
+                        <a asp-action="Edit"
+                           asp-route-id="@item.Id"
+                           class="btn btn-sm btn-edit">
+                            Edit
+                        </a>
+                        
+                        <button type="button"
+                                class="btn btn-sm btn-details"
+                                onclick="loadEmployeeHistory('@item.EmployeeId')">
+                            Details
+                        </button>
+                        <a asp-action="Delete"
+                           asp-route-id="@item.Id"
+                           class="btn btn-sm btn-delete">
+                            Delete
+                        </a>
+                     
+                        
+                  
                     </td>
                 </tr>
             }
-        </tbody>
-    </table>
-</div>
+        }
+        else
+        {
+            <tr>
+                <td colspan="6" class="text-center text-muted">
+                    No employees found.
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
 
 <!-- Pagination Controls -->
-<div class="mx-2 my-2" id="paginationContainer">
+<div class="mx-2 my-2">
     @Html.PaginationFor(
     Model,
     page => Url.Action("Index", new
-    {
+    {   
         page,
-        pageSize = Model.PageSize,
-        email = ViewBag.SearchEmail
+        pageSize = Model.PageSize
     })
         )
 </div>
 
-@section Scripts {
-    <script>
+// Add this JavaScript to your Index.cshtml view
+
+<script>
+    $(document).ready(function() {
         let searchTimeout;
 
-        $('#searchInput').on('input', function() {
+        $('#searchInput').on('keyup', function() {
+            const searchTerm = $(this).val().trim();
+
+            // Clear previous timeout
             clearTimeout(searchTimeout);
-            const email = $(this).val();
 
-            // Debounce: wait 500ms after user stops typing
+            // Set a new timeout to avoid too many requests
             searchTimeout = setTimeout(function() {
-                loadEmployees(email, 1);
-            }, 500);
+                if (searchTerm.length >= 2) {
+                    performSearch(searchTerm);
+                } else if (searchTerm.length === 0) {
+                    // Clear results or reload page
+                    $('#searchResults').empty();
+                    // Optional: reload the page to show all employees
+                    // window.location.href = '@Url.Action("Index", "Employee")';
+                }
+            }, 300); // Wait 300ms after user stops typing
         });
+    });
 
-        function loadEmployees(email, page) {
+    function performSearch(searchTerm) {
+        $.ajax({
+            url: '@Url.Action("Search", "Employee")',
+            type: 'GET',
+            data: { searchTerm: searchTerm },
+            success: function(response) {
+                if (response.success) {
+                    displaySearchResults(response.data);
+                } else {
+                    $('#searchResults').html('<p class="text-muted">No results found</p>');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Search error:', error);
+                $('#searchResults').html('<p class="text-danger">Error performing search</p>');
+            }
+        });
+    }
+
+    function displaySearchResults(employees) {
+        let html = '';
+
+        if (employees.length === 0) {
+            html = '<p class="text-muted">No employees found</p>';
+        } else {
+            html = '<div class="list-group">';
+
+            employees.forEach(function(emp) {
+                const statusBadge = emp.isActive
+                    ? '<span class="badge bg-success">Active</span>'
+                    : '<span class="badge bg-secondary">Inactive</span>';
+
+                html += `
+                    <a href="/Employee/Details/${emp.employeeId}" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <h6 class="mb-1">${emp.fullName} ${statusBadge}</h6>
+                            <small>${emp.employeeId}</small>
+                        </div>
+                        <p class="mb-1">${emp.email}</p>
+                        <small class="text-muted">${emp.designation || 'N/A'}</small>
+                    </a>
+                `;
+            });
+
+            html += '</div>';
+        }
+
+        $('#searchResults').html(html);
+    }
+</script>
+<!-- ADD THIS MODAL STRUCTURE -->
+<div class="modal fade" id="historyModal" tabindex="-1" aria-labelledby="historyModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="historyModalLabel">Employee Change History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="historyModalBody">
+                <div id="historySpinner" class="text-center d-none">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <div id="historyContent"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        function loadEmployeeHistory(employeeId) {
+            // Show the modal
+            var modal = new bootstrap.Modal(document.getElementById('historyModal'));
+            modal.show();
+
+            // Show loading spinner
+            $('#historyModalBody').html(`
+                <div class="text-center">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `);
+
+            // Load the content via AJAX
             $.ajax({
-                url: '@Url.Action("Index")',
+                url: '@Url.Action("Details", "Employee")',
                 type: 'GET',
-                data: {
-                    email: email,
-                    page: page,
-                    pageSize: @Model.PageSize
-                },
+                data: { employeeId: employeeId },
                 success: function(result) {
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(result, 'text/html');
-
-                    // Update table
-                    const newTable = doc.querySelector('#employeesContainer');
-                    if (newTable) {
-                        $('#employeesContainer').html(newTable.innerHTML);
-                    }
-
-                    // Update pagination
-                    const newPagination = doc.querySelector('#paginationContainer');
-                    if (newPagination) {
-                        $('#paginationContainer').html(newPagination.innerHTML);
-                    }
-
-                    // Update clear button
-                    if (email) {
-                        if ($('#clearBtn').length === 0) {
-                            $('.d-flex.gap-2').append('<a href="@Url.Action("Index")" class="btn btn-outline-secondary" id="clearBtn">Clear</a>');
-                        }
-                    } else {
-                        $('#clearBtn').remove();
-                    }
+                    $('#historyModalBody').html(result);
                 },
-                error: function() {
-                    alert('Error loading employees');
+                error: function(xhr, status, error) {
+                    $('#historyModalBody').html(`
+                        <div class="alert alert-danger">
+                            <h4>Error</h4>
+                            <p>Failed to load employee history. Please try again.</p>
+                            <small>${error}</small>
+                        </div>
+                    `);
                 }
             });
         }
-
-        // Handle pagination clicks
-        $(document).on('click', '#paginationContainer a', function(e) {
-            e.preventDefault();
-            const url = $(this).attr('href');
-            const email = $('#searchInput').val();
-
-            // Extract page number from URL
-            const urlParams = new URLSearchParams(url.split('?')[1]);
-            const page = urlParams.get('page') || 1;
-
-            loadEmployees(email, page);
-        });
     </script>
 }

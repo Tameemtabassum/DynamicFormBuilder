@@ -1,3 +1,4 @@
+using OfficeOpenXml; 
 using DynamicFormBuilder.Data;
 using DynamicFormBuilder.Data.DBContext;
 using DynamicFormBuilder.Services;
@@ -6,6 +7,7 @@ using DynamicFormBuilder.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
 
 // Register DbContext
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -22,8 +24,6 @@ builder.Services.AddScoped<FormRepository>();
 
 builder.Services.AddScoped<IParticipantsService, ParticipantsService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
-
-
 
 
 var app = builder.Build();

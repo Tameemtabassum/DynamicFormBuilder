@@ -128,6 +128,54 @@ namespace DynamicFormBuilder.Controllers
             return RedirectToAction("Index");
         }
 
+        // DETAILS - GET
+        public IActionResult Details(string employeeId)
+        {
+            //var employee = _employeeService.GetEmployeeById(id);
+            if (employeeId == null)
+            {
+                // For AJAX requests, return error message in partial view
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    ViewBag.Message = "Employee not found.";
+                    return PartialView("Details", new List<EmployeeChangeHistoriesViewModel>());
+                }
+                return NotFound();
+            }
+
+            Thread.Sleep(500); // TEST 
+
+            var history = _employeeService.GetEmployeeChangeHistoryRecord(employeeId);
+
+            if (history == null || !history.Any())
+            {
+                ViewBag.Message = "No change history found for this employee.";
+
+                // For AJAX requests (modal), return partial view without layout
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return PartialView("Details", new List<EmployeeChangeHistoriesViewModel>());
+                }
+
+                // For direct browser access, return full view with layout
+                return View(new List<EmployeeChangeHistoriesViewModel>());
+            }
+
+            // Check if it's an AJAX request - return ONLY the partial view (no layout/nav)
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("Details", history);
+            }
+
+            // For direct browser access, return the full view with layout
+            return View(history);
+        }
+
+
+
+
+
+
         // DELETE - GET 
         public IActionResult Delete(string id)
         {
@@ -159,6 +207,36 @@ namespace DynamicFormBuilder.Controllers
 
             TempData["success"] = "Employee deleted successfully";
             return RedirectToAction("Index");
+        }
+
+        // search
+
+        [HttpGet]
+        public IActionResult Search(string searchTerm, int page = 1, int pageSize = 10)
+        {
+            if (string.IsNullOrWhiteSpace(searchTerm))
+            {
+                return Json(new { success = false, data = new List<object>() });
+            }
+
+            var employees = _employeeService.GetAll()
+                .Where(e => e.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                            e.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                            e.EmployeeId.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                            (e.Designation != null && e.Designation.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
+                .Select(e => new
+                {
+                    id = e.Id,
+                    employeeId = e.EmployeeId,
+                    fullName = e.FullName,
+                    email = e.Email,
+                    designation = e.Designation,
+                    dob = e.DOB.HasValue ? e.DOB.Value.ToString("yyyy-MM-dd") : "",
+                    isActive = e.IsActive
+                })
+                .ToList();
+
+            return Json(new { success = true, data = employees });
         }
 
         #region Employee Status Update

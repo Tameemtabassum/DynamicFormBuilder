@@ -2,6 +2,7 @@
 using DynamicFormBuilder.Data.DBContext;
 using DynamicFormBuilder.Models;
 using DynamicFormBuilder.Services.Interfaces;
+using DynamicFormBuilder.ViewModels;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
 
@@ -44,6 +45,35 @@ namespace DynamicFormBuilder.Services.Implementations
             };
         }
 
+        public IEnumerable<EmployeeChangeHistoriesViewModel> GetEmployeeChangeHistoryRecord(string employeeId)
+        {
+            try
+            {
+                // Convert string Id to Guid for comparison
+                if (employeeId == null)
+                {
+                    return Enumerable.Empty<EmployeeChangeHistoriesViewModel>();
+                }
+
+                return _context.EmployeeChangeHistories
+                               .Where(x => x.EmployeeId == employeeId)
+                               .OrderByDescending(x => x.ChangedAt)
+                               .Select(x => new EmployeeChangeHistoriesViewModel
+                               {
+                                   Id = x.Id,
+                                   EmployeeId = x.EmployeeId,
+                                   PreviousData = x.PreviousData,
+                                   UpdatedData = x.UpdatedData,
+                                   ChangedAt = x.ChangedAt
+                               })
+                               .ToList();
+            }
+            catch
+            {
+                return Enumerable.Empty<EmployeeChangeHistoriesViewModel>();
+            }
+        }
+
 
         public EmployeeModel GetEmployeeDataByEmployeeId(string employeeId)
         {
@@ -73,7 +103,7 @@ namespace DynamicFormBuilder.Services.Implementations
             _context.SaveChanges(); 
         }
 
-        public void Update(EmployeeModel employee)
+        public EmployeeModel Update(EmployeeModel employee)
         {
             if (employee == null)
                 throw new ArgumentNullException(nameof(employee));
@@ -84,6 +114,21 @@ namespace DynamicFormBuilder.Services.Implementations
             if (existing == null)
                 throw new Exception("Employee not found");
 
+            if (existing.IsActive != employee.IsActive) { 
+
+                var history = new EmployeeChangeHistoriesModel
+                {
+
+                    Id= Guid.NewGuid().ToString(),
+                    EmployeeId = existing.EmployeeId,
+                    PreviousData = existing.IsActive ? "Active" : "Inactive",
+                    UpdatedData = employee.IsActive ? "Active" : "Inactive",
+                    ChangedAt = DateTime.UtcNow
+                };
+
+            _context.EmployeeChangeHistories.Add(history);
+        }
+
             existing.FullName = employee.FullName;
             existing.EmployeeId = employee.EmployeeId;
             existing.Email = employee.Email;
@@ -91,7 +136,9 @@ namespace DynamicFormBuilder.Services.Implementations
             existing.Designation = employee.Designation;
             existing.IsActive = employee.IsActive;
 
+            _context.Employees.Update(existing);
             _context.SaveChanges();
+            return existing;
         }
 
      
@@ -123,27 +170,6 @@ namespace DynamicFormBuilder.Services.Implementations
             _context.SaveChanges(); // Synchronous
         }
 
-        public IEnumerable<EmployeeChangeHistoriesModel> GetEmployeeChangeHistoryRecord(string mainTableId)
-        {
-            try
-            {
-                return _context.EmployeeChangeHistories
-                               .Where(x => x.EmployeeId == mainTableId)
-                               .OrderByDescending(x => x.ChangedAt)
-                               .Select(x => new EmployeeChangeHistoriesModel
-                               {
-                                   EmployeeId = x.EmployeeId,
-                                   PreviousData = x.PreviousData,
-                                   UpdatedData = x.UpdatedData,
-                                   ChangedAt = x.ChangedAt
-                               })
-                               .ToList();
-            }
-            catch
-            {
-                return new List<EmployeeChangeHistoriesModel>();
-            }
-        }
 
 
 

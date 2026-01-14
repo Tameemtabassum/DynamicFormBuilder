@@ -1,4 +1,6 @@
 ﻿using DynamicFormBuilder.Models;
+using DynamicFormBuilder.ViewModels;
+using Microsoft.AspNetCore.Mvc;
 
 namespace DynamicFormBuilder.Services.Interfaces
 {
@@ -7,11 +9,11 @@ namespace DynamicFormBuilder.Services.Interfaces
         IEnumerable<EmployeeModel> GetAll();
         EmployeeModel GetById(string id);
         void Create(EmployeeModel employee);
-        public void Update(EmployeeModel employee);
+        public EmployeeModel Update(EmployeeModel employee);
         void Delete(string id); bool IsEmployeeIdExist(string employeeId);
         EmployeeModel GetEmployeeDataByEmployeeId(string employeeId);
-        IEnumerable<EmployeeChangeHistoriesModel> GetEmployeeChangeHistoryRecord(string mainTableId);
-
+      
+        IEnumerable<EmployeeChangeHistoriesViewModel> GetEmployeeChangeHistoryRecord(string employeeId);
 
     }
 }
