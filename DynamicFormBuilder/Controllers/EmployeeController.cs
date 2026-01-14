@@ -1,6 +1,6 @@
 ﻿using CsvHelper;
 using CsvHelper.Configuration;
-using CsvHelper.Configuration.Attributes; 
+using CsvHelper.Configuration.Attributes;
 using DynamicFormBuilder.Services.Interfaces;
 using DynamicFormBuilder.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -22,20 +22,18 @@ using X.PagedList.Extensions;
 
 namespace DynamicFormBuilder.Controllers
 {
-
+    [Authorize]
 
     public class EmployeeController : Controller
     {
 
         private IEmployeeService _employeeService;
 
-
         public EmployeeController(IEmployeeService employeeService)
         {
             _employeeService = employeeService;
-
-
         }
+
         public IActionResult Index(string email, int? designationId, int page = 1, int pageSize = 10)
         {
             var employees = _employeeService.GetAll();
@@ -80,6 +78,7 @@ namespace DynamicFormBuilder.Controllers
 
             return View(pagedList);
         }
+
         // CREATE - GET
         public IActionResult Create()
         {
@@ -96,42 +95,61 @@ namespace DynamicFormBuilder.Controllers
             if (!ModelState.IsValid)
                 return View(model);
 
-            _employeeService.Create(model);  
+            _employeeService.Create(model);
             TempData["success"] = "Employee created successfully";
             return RedirectToAction("Index");
-
         }
 
-        // EDIT - GET
+        // EDIT - GET (Updated to support AJAX/Modal)
         public IActionResult Edit(string id)
         {
             if (string.IsNullOrEmpty(id))
                 return NotFound();
 
-            var employee = _employeeService.GetById(id); 
+            var employee = _employeeService.GetById(id);
             if (employee == null)
                 return NotFound();
 
+            // Check if it's an AJAX request - return partial view for modal
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("Edit", employee);
+            }
+
+            // For direct browser access, return full view with layout
             return View(employee);
         }
 
-        // EDIT - POST
+        // EDIT - POST (Updated to support AJAX/Modal)
         [HttpPost]
         [ValidateAntiForgeryToken]
         public IActionResult Edit(EmployeeModel model)
         {
             if (!ModelState.IsValid)
+            {
+                // Check if it's an AJAX request
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return PartialView("Edit", model);
+                }
                 return View(model);
+            }
 
-            _employeeService.Update(model); 
+            _employeeService.Update(model);
             TempData["success"] = "Employee updated successfully";
+
+            // For AJAX requests, return JSON with redirect info
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new { success = true, redirectTo = Url.Action("Index") });
+            }
+
             return RedirectToAction("Index");
         }
 
         // DETAILS - GET
         public IActionResult Details(string employeeId)
         {
-            //var employee = _employeeService.GetEmployeeById(id);
             if (employeeId == null)
             {
                 // For AJAX requests, return error message in partial view
@@ -171,12 +189,7 @@ namespace DynamicFormBuilder.Controllers
             return View(history);
         }
 
-
-
-
-
-
-        // DELETE - GET 
+        // DELETE - GET (Updated to support AJAX/Modal)
         public IActionResult Delete(string id)
         {
             if (string.IsNullOrEmpty(id))
@@ -187,10 +200,17 @@ namespace DynamicFormBuilder.Controllers
             if (employee == null)
                 return NotFound();
 
+            // Check if it's an AJAX request - return partial view for modal
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("Delete", employee);
+            }
+
+            // For direct browser access, return full view with layout
             return View(employee);
         }
 
-        // DELETE - POST 
+        // DELETE - POST (Updated to support AJAX/Modal)
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
         public IActionResult DeleteConfirmed(string id)
@@ -206,11 +226,17 @@ namespace DynamicFormBuilder.Controllers
             _employeeService.Delete(id);
 
             TempData["success"] = "Employee deleted successfully";
+
+            // For AJAX requests, return JSON with redirect info
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new { success = true, redirectTo = Url.Action("Index") });
+            }
+
             return RedirectToAction("Index");
         }
 
-        // search
-
+        // SEARCH - 
         [HttpGet]
         public IActionResult Search(string searchTerm, int page = 1, int pageSize = 10)
         {
@@ -220,10 +246,8 @@ namespace DynamicFormBuilder.Controllers
             }
 
             var employees = _employeeService.GetAll()
-                .Where(e => e.Email.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                            e.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                            e.EmployeeId.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
-                            (e.Designation != null && e.Designation.Contains(searchTerm, StringComparison.OrdinalIgnoreCase)))
+                .Where(e => e.EmployeeId.Contains(searchTerm, StringComparison.OrdinalIgnoreCase) ||
+                            e.FullName.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
                 .Select(e => new
                 {
                     id = e.Id,
@@ -242,12 +266,10 @@ namespace DynamicFormBuilder.Controllers
         #region Employee Status Update
         public ActionResult EmployeeStatusUpdate(bool searchStatus, string others, string searchEmployeeId, int page = 1, int pageSize = 30)
         {
-
             ViewBag.page = page;
             ViewBag.pageSize = pageSize;
             var model = new EmployeeModel()
             {
-
                 IsActive = searchStatus,
                 Id = searchEmployeeId,
 
@@ -263,17 +285,14 @@ namespace DynamicFormBuilder.Controllers
 
         public ActionResult SearchForEmployeeStatusUpdate(string searchStatus, string others, int searchEmployeeId, int page = 1, int pageSize = 30)
         {
-
             ViewBag.searchEmployeeId = searchEmployeeId;
             ViewBag.status = searchStatus;
             ViewBag.page = page;
             ViewBag.pageSize = pageSize;
             ViewBag.others = others;
 
-
             return View();
         }
-
 
         [HttpGet]
         public ActionResult EmployeeStatusUpdateBulkUpload(int page = 1, int pageSize = 30)
@@ -390,14 +409,12 @@ namespace DynamicFormBuilder.Controllers
                             continue;
                         }
 
-                        // ✅ FIX: Convert status string to boolean
-
                         bool isActive = status.Equals("Active", StringComparison.OrdinalIgnoreCase);
 
                         empList.Add(new EmployeeModel
                         {
                             EmployeeId = employeeId,
-                            IsActive = isActive // ✅ Now properly assigned
+                            IsActive = isActive
                         });
 
                         processedEmployeeIds.Add(employeeId);
@@ -428,14 +445,8 @@ namespace DynamicFormBuilder.Controllers
                         if (data == null)
                             throw new Exception($"Employee data not found for ID: {emp.EmployeeId}");
 
-                        // Update the status
                         data.IsActive = emp.IsActive;
-                        //data.UpdatedDate = now; // Optional: track when updated
-                        //data.UpdatedBy = User.Identity.Name; // Optional: track who updated
-
-                        // ✅ FIX: Uncommented and added error checking
                         _employeeService.Update(data);
-
 
                         updatedCount++;
                     }
@@ -529,7 +540,7 @@ namespace DynamicFormBuilder.Controllers
                 HasHeaderRecord = true,
                 MissingFieldFound = null,
                 TrimOptions = CsvHelper.Configuration.TrimOptions.Trim,
-                BadDataFound = null // Ignore bad data instead of throwing
+                BadDataFound = null
             }))
             {
                 // Read header
@@ -607,10 +618,6 @@ namespace DynamicFormBuilder.Controllers
         }
         #endregion
 
-
-
         #endregion
-
     }
 }
-

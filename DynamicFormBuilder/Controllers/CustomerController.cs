@@ -5,6 +5,7 @@ using DynamicFormBuilder.Models;
 using DynamicFormBuilder.Services.Implementations;
 using DynamicFormBuilder.Services.Interfaces;
 using DynamicFormBuilder.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Identity.Client;
@@ -18,7 +19,7 @@ using System.Net;
 using X.PagedList.Extensions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-
+[Authorize]
 public class CustomerController : Controller
 {
     private readonly ICustomerService _customerService;

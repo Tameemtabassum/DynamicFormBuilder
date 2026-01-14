@@ -1,11 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using DynamicFormBuilder.Data;
+﻿using DynamicFormBuilder.Data;
 using DynamicFormBuilder.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 
 
 namespace DynamicFormBuilder.Controllers
 {
+    [Authorize]
     public class FormController : Controller
     {
         private readonly FormRepository _repository;

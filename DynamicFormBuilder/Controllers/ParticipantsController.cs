@@ -4,6 +4,7 @@ using DynamicFormBuilder.Models;
 using DynamicFormBuilder.Services.Implementations;
 using DynamicFormBuilder.Services.Interfaces;
 using DynamicFormBuilder.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OfficeOpenXml;
 using System.Diagnostics.Metrics;
@@ -15,6 +16,7 @@ using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace DynamicFormBuilder.Controllers
 {
+    [Authorize]
     public class ParticipantsController : Controller
     {
         private readonly IParticipantsService _participantsService;

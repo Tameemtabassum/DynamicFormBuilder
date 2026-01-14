@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using DynamicFormBuilder.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@inject UserManager<ApplicationUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -100,6 +105,44 @@
                     width: 20px;
                     font-size: 1.1rem;
                 }
+
+        /* User Profile Section in Sidebar */
+        .sidebar-user {
+            padding: 15px 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: auto;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            background-color: rgba(0,0,0,0.2);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            color: white;
+            font-size: 0.9rem;
+        }
+
+            .user-info i {
+                margin-right: 10px;
+                font-size: 1.2rem;
+            }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.9);
+            cursor: pointer;
+            padding: 0;
+            width: 100%;
+            text-align: left;
+        }
+
+            .logout-btn:hover {
+                color: white;
+            }
 
         /* Main Content Area */
         .main-content {
@@ -236,6 +279,39 @@
                 </a>
             </li>
         </ul>
+
+        <!-- User Profile Section -->
+        <div class="sidebar-user">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                <div class="user-info">
+                    <i class="bi bi-person-circle"></i>
+                    <span>@User.Identity.Name</span>
+                </div>
+                <div class="sidebar-nav">
+                    <form asp-controller="Account" asp-action="Logout" method="post">
+                        <button type="submit" class="logout-btn sidebar-nav a">
+                            <i class="bi bi-box-arrow-right"></i> Logout
+                        </button>
+                    </form>
+                </div>
+            }
+            else
+            {
+                <ul class="sidebar-nav" style="padding: 0;">
+                    <li>
+                        <a asp-controller="Account" asp-action="Login">
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </a>
+                    </li>
+                    <li>
+                        <a asp-controller="Account" asp-action="Register">
+                            <i class="bi bi-person-plus"></i> Register
+                        </a>
+                    </li>
+                </ul>
+            }
+        </div>
     </aside>
 
     <!-- Main Content -->

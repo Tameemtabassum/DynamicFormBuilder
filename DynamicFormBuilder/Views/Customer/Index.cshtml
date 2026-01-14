@@ -35,12 +35,12 @@
                    name="phone"
                    value="@ViewBag.Phone"
                    class="form-control"
-                   placeholder="Phone" />
+                   placeholder="🔍 Search by phone number..." />
         </div>
         <!-- Division -->
         <div class="col-md-3">
             <select name="divisionId" class="form-control">
-                <option value="">All Divisions</option>
+                <option value="" style="color:lightgray;">🔍 Search by Division...</option>
                 @foreach (var division in (List<SelectListItem>)ViewBag.DivisionList)
                 {
                     <option value="@division.Value"

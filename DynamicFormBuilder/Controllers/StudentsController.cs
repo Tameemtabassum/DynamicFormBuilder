@@ -3,10 +3,11 @@ using DynamicFormBuilder.Models;
 using DynamicFormBuilder.Services.Implementations;
 using DynamicFormBuilder.Services.Interfaces;
 using DynamicFormBuilder.ViewModels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using X.PagedList.Extensions;
 
-
+[Authorize]
 public class StudentsController : Controller
 {
     //private readonly StudentRepository _studentRepository;
