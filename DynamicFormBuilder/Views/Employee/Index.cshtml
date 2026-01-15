@@ -53,7 +53,8 @@
             <th>Email</th>
             <th>Designation</th>
             <th>Status</th>
-            <th style="width:180px;">Action</th>
+            <th style="width:130px;">Action</th>
+
         </tr>
     </thead>
     <tbody>
@@ -71,27 +72,43 @@
                             @(item.IsActive == true ? "Active" : "InActive")
                         </span>
                     </td>
-                    <td style="white-space: nowrap;">
-                        @* Edit Button with Modal *@
-                        <button type="button"
-                                class="btn btn-sm btn-edit"
-                                onclick="loadEmployeeEdit('@item.Id')">
-                            Edit
-                        </button>
 
-                        @* Details Button with Modal *@
-                        <button type="button"
-                                class="btn btn-sm btn-details"
-                                onclick="loadEmployeeHistory('@item.EmployeeId')">
-                            Details
-                        </button>
+                    <td style ="text-align: center;">                    
+                        <div class="dropdown">
+                            <button class="btn btn-info btn-sm dropdown-toggle"
+                                    type="button"
+                                    id="dropdownMenuButton_@item.Id"
+                                    data-bs-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">
+                                Action
+                            </button>
 
-                        @* Delete Button with Modal *@
-                        <button type="button"
-                                class="btn btn-sm btn-delete"
-                                onclick="loadEmployeeDelete('@item.Id')">
-                            Delete
-                        </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton_@item.Id">
+                                <li>
+                                    <button class="dropdown-item"
+                                            type="button"
+                                            onclick="loadEmployeeEdit('@item.Id')">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item"
+                                            type="button"
+                                            onclick="loadEmployeeHistory('@item.EmployeeId')">
+                                        <i class="bi bi-eye"></i> Details
+                                    </button>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <button class="dropdown-item text-danger"
+                                            type="button"
+                                            onclick="loadEmployeeDelete('@item.Id')">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
                     </td>
                 </tr>
             }

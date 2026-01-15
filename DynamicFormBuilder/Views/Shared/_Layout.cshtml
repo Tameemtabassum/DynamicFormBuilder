@@ -3,6 +3,12 @@
 @inject SignInManager<ApplicationUser> SignInManager
 @inject UserManager<ApplicationUser> UserManager
 
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    bool isAuthPage = controller == "Account" && (action == "Login" || action == "Register");
+}
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -32,8 +38,137 @@
             margin: 0;
             padding: 0;
         }
+            /* Auth Page Styles */
+            body.auth-page {
+                background: linear-gradient(135deg, #e0e7ff 0%, #f3f4f6 100%);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
 
-        /* Sidebar */
+                body.auth-page .sidebar {
+                    display: none !important;
+                }
+
+                body.auth-page .main-content {
+                    margin-left: 0 !important;
+                }
+
+                body.auth-page .footer {
+                    display: none !important;
+                }
+
+        .auth-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 20px;
+        }
+
+        .auth-card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            background: white;
+            overflow: hidden;
+        }
+
+        .auth-card-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
+            padding: 25px 30px; 
+            text-align: center;
+            border: none;
+        }
+
+            .auth-card-header h2 {
+                margin: 5px 0 3px 0; 
+                font-weight: 700;
+                font-size: 1.6rem; 
+                color: white;
+            }
+
+            .auth-card-header i {
+                font-size: 2.5rem; 
+                margin-bottom: 8px; 
+                display: block;
+                color: white;
+                opacity: 0.95;
+            }
+
+            .auth-card-header p {
+                margin: 3px 0 0 0; 
+                color: rgba(255,255,255,0.9);
+                font-size: 0.9rem; 
+            }
+
+        .auth-card .card-body {
+            padding: 25px 35px; 
+            background: white;
+        }
+
+        .auth-card .form-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 6px; 
+            font-size: 0.9rem;
+        }
+
+        .auth-card .form-control {
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px 14px; 
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background-color: #f9fafb;
+        }
+
+        .auth-card .btn-primary {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            border: none;
+            padding: 11px; 
+            font-weight: 600;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .auth-card .card-footer {
+            background: linear-gradient(to bottom, #f9fafb 0%, #f3f4f6 100%);
+            border-radius: 0;
+            padding: 18px 35px; 
+            text-align: center;
+            border-top: 1px solid #e5e7eb;
+            color: #6b7280;
+        }
+
+        
+        .auth-card .mb-3 {
+            margin-bottom: 0.8rem !important; /* ← Reduced spacing */
+        }
+
+        .auth-card .alert {
+            border-radius: 10px;
+            font-size: 0.9rem;
+            border: none;
+        }
+
+        .auth-card .alert-danger {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+
+        .auth-card .row .col-md-6 {
+            padding-left: 8px;
+            padding-right: 8px;
+        }
+
+        .auth-card .row {
+            margin-left: -8px;
+            margin-right: -8px;
+        }
+        /* Sidebar styles  */
         .sidebar {
             position: fixed;
             top: 0;
@@ -222,97 +357,86 @@
     </style>
 </head>
 
-@if (TempData["success"] != null)
-{
-    <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
-        <div id="successToast"
-             class="toast align-items-center text-bg-success border-0"
-             role="alert"
-             aria-live="assertive"
-             aria-atomic="true">
+<body class="@(isAuthPage ? "auth-page" : "")">
 
-            <div class="d-flex">
-                <div class="toast-body">
-                    <i class="bi bi-check-circle-fill me-2"></i>
-                    @TempData["success"]
+    @if (TempData["success"] != null)
+    {
+        <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 1100;">
+            <div id="successToast"
+                 class="toast align-items-center text-bg-success border-0"
+                 role="alert"
+                 aria-live="assertive"
+                 aria-atomic="true">
+
+                <div class="d-flex">
+                    <div class="toast-body">
+                        <i class="bi bi-check-circle-fill me-2"></i>
+                        @TempData["success"]
+                    </div>
+                    <button type="button"
+                            class="btn-close btn-close-white me-2 m-auto"
+                            data-bs-dismiss="toast"
+                            aria-label="Close"></button>
                 </div>
-                <button type="button"
-                        class="btn-close btn-close-white me-2 m-auto"
-                        data-bs-dismiss="toast"
-                        aria-label="Close"></button>
+
             </div>
-
         </div>
-    </div>
-}
+    }
 
-<body>
-    <!-- Sidebar -->
-    <aside class="sidebar">
-        <a class="sidebar-brand" asp-area="" asp-controller="Form" asp-action="Index">
-            <i class="bi bi-file-earmark-text"></i> Dynamic Form Builder
-        </a>
-        <ul class="sidebar-nav">
-            <li>
-                <a asp-area="" asp-controller="Form" asp-action="Index">
-                    <i class="bi bi-list-ul"></i> Forms List
-                </a>
-            </li>
-            <li>
-                <a asp-area="" asp-controller="Students" asp-action="Index">
-                    <i class="bi bi-people"></i> Student List
-                </a>
-            </li>
-            <li>
-                <a asp-area="" asp-controller="Customer" asp-action="Index">
-                    <i class="bi bi-person-badge"></i> Customer List
-                </a>
-            </li>
-            <li>
-                <a asp-area="" asp-controller="Participants" asp-action="Index">
-                    <i class="bi bi-person-check"></i> Participant List
-                </a>
-            </li>
-            <li>
-                <a asp-area="" asp-controller="Employee" asp-action="Index">
-                    <i class="bi bi-briefcase"></i> Employee List
-                </a>
-            </li>
-        </ul>
+    @if (!isAuthPage)
+    {
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <a class="sidebar-brand" asp-area="" asp-controller="Form" asp-action="Index">
+                <i class="bi bi-file-earmark-text"></i> Dynamic Form Builder
+            </a>
+            <ul class="sidebar-nav">
+                <li>
+                    <a asp-area="" asp-controller="Form" asp-action="Index">
+                        <i class="bi bi-list-ul"></i> Forms List
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="" asp-controller="Students" asp-action="Index">
+                        <i class="bi bi-people"></i> Student List
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="" asp-controller="Customer" asp-action="Index">
+                        <i class="bi bi-person-badge"></i> Customer List
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="" asp-controller="Participants" asp-action="Index">
+                        <i class="bi bi-person-check"></i> Participant List
+                    </a>
+                </li>
+                <li>
+                    <a asp-area="" asp-controller="Employee" asp-action="Index">
+                        <i class="bi bi-briefcase"></i> Employee List
+                    </a>
+                </li>
+            </ul>
 
-        <!-- User Profile Section -->
-        <div class="sidebar-user">
-            @if (SignInManager.IsSignedIn(User))
-            {
-                <div class="user-info">
-                    <i class="bi bi-person-circle"></i>
-                    <span>@User.Identity.Name</span>
-                </div>
-                <div class="sidebar-nav">
-                    <form asp-controller="Account" asp-action="Logout" method="post">
-                        <button type="submit" class="logout-btn sidebar-nav a">
-                            <i class="bi bi-box-arrow-right"></i> Logout
-                        </button>
-                    </form>
-                </div>
-            }
-            else
-            {
-                <ul class="sidebar-nav" style="padding: 0;">
-                    <li>
-                        <a asp-controller="Account" asp-action="Login">
-                            <i class="bi bi-box-arrow-in-right"></i> Login
-                        </a>
-                    </li>
-                    <li>
-                        <a asp-controller="Account" asp-action="Register">
-                            <i class="bi bi-person-plus"></i> Register
-                        </a>
-                    </li>
-                </ul>
-            }
-        </div>
-    </aside>
+            <!-- User Profile Section -->
+            <div class="sidebar-user">
+                @if (SignInManager.IsSignedIn(User))
+                {
+                    <div class="user-info">
+                        <i class="bi bi-person-circle"></i>
+                        <span>@User.Identity.Name</span>
+                    </div>
+                    <div class="sidebar-nav">
+                        <form asp-controller="Account" asp-action="Logout" method="post">
+                            <button type="submit" class="logout-btn sidebar-nav a">
+                                <i class="bi bi-box-arrow-right"></i> Logout
+                            </button>
+                        </form>
+                    </div>
+                }
+            </div>
+        </aside>
+    }
 
     <!-- Main Content -->
     <div class="main-content">
@@ -322,11 +446,14 @@
             </div>
         </main>
 
-        <footer class="footer text-muted">
-            <div class="container-fluid text-center">
-                &copy; 2026 - Tameem - <a asp-area="" asp-controller="Form" asp-action="Index">Home</a>
-            </div>
-        </footer>
+        @if (!isAuthPage)
+        {
+            <footer class="footer text-muted">
+                <div class="container-fluid text-center">
+                    &copy; 2026 - Tameem - <a asp-area="" asp-controller="Form" asp-action="Index">Home</a>
+                </div>
+            </footer>
+        }
     </div>
 
     <!-- jQuery -->
@@ -341,8 +468,6 @@
 
     <!-- Site JS -->
     <script src="~/js/site.js" asp-append-version="true"></script>
-
-
 
     <script>
         // Highlight active menu
