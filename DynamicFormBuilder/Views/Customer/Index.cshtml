@@ -225,18 +225,17 @@
 
 @section Scripts {
     <script>
-        // Load Customer Details
+        // ===========================
+        // CUSTOMER MODAL FUNCTIONS
+        // ===========================
+
+        // --- DETAILS ---
         function loadCustomerDetails(id) {
-            var modal = new bootstrap.Modal(document.getElementById('detailsModal'));
+            const modalEl = document.getElementById('detailsModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
 
-            $('#detailsModalBody').html(`
-                <div class="text-center">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            `);
+            $('#detailsModalBody').html(`<div class="text-center"><div class="spinner-border"></div></div>`);
 
             $.ajax({
                 url: '@Url.Action("Details", "Customer")',
@@ -245,29 +244,19 @@
                 success: function(result) {
                     $('#detailsModalBody').html(result);
                 },
-                error: function(xhr, status, error) {
-                    $('#detailsModalBody').html(`
-                        <div class="alert alert-danger">
-                            <h4>Error</h4>
-                            <p>Failed to load customer details. Please try again.</p>
-                        </div>
-                    `);
+                error: function() {
+                    $('#detailsModalBody').html('<div class="alert alert-danger">Failed to load customer details.</div>');
                 }
             });
         }
 
-        // Load Customer Edit Form
+        // --- EDIT ---
         function loadCustomerEdit(id) {
-            var modal = new bootstrap.Modal(document.getElementById('editModal'));
+            const modalEl = document.getElementById('editModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
 
-            $('#editModalBody').html(`
-                <div class="text-center">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            `);
+            $('#editModalBody').html(`<div class="text-center"><div class="spinner-border"></div></div>`);
 
             $.ajax({
                 url: '@Url.Action("Edit", "Customer")',
@@ -275,30 +264,42 @@
                 data: { id: id },
                 success: function(result) {
                     $('#editModalBody').html(result);
+
+                    // Attach submit handler after form is loaded
+                    $('#editModalBody form').off('submit').on('submit', function(e) {
+                        e.preventDefault();
+                        const form = $(this);
+                        const formData = new FormData(this);
+
+                        $.ajax({
+                            url: form.attr('action'),
+                            type: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success: function() {
+                                modal.hide();
+                                location.reload();
+                            },
+                            error: function() {
+                                $('#editModalBody').html('<div class="alert alert-danger">Failed to update customer.</div>');
+                            }
+                        });
+                    });
                 },
-                error: function(xhr, status, error) {
-                    $('#editModalBody').html(`
-                        <div class="alert alert-danger">
-                            <h4>Error</h4>
-                            <p>Failed to load customer edit form. Please try again.</p>
-                        </div>
-                    `);
+                error: function() {
+                    $('#editModalBody').html('<div class="alert alert-danger">Failed to load edit form.</div>');
                 }
             });
         }
 
-        // Load Customer Delete Confirmation
+        // --- DELETE ---
         function loadCustomerDelete(id) {
-            var modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+            const modalEl = document.getElementById('deleteModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
             modal.show();
 
-            $('#deleteModalBody').html(`
-                <div class="text-center">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-            `);
+            $('#deleteModalBody').html(`<div class="text-center"><div class="spinner-border"></div></div>`);
 
             $.ajax({
                 url: '@Url.Action("Delete", "Customer")',
@@ -306,76 +307,41 @@
                 data: { id: id },
                 success: function(result) {
                     $('#deleteModalBody').html(result);
+
+                    // Attach submit handler after form is loaded
+                    $('#deleteModalBody form').off('submit').on('submit', function(e) {
+                        e.preventDefault();
+                        const form = $(this);
+                        const formData = new FormData(this);
+
+                        $.ajax({
+                            url: form.attr('action'),
+                            type: 'POST',
+                            data: formData,
+                            processData: false,
+                            contentType: false,
+                            success: function() {
+                                modal.hide();
+                                location.reload();
+                            },
+                            error: function() {
+                                $('#deleteModalBody').html('<div class="alert alert-danger">Failed to delete customer.</div>');
+                            }
+                        });
+                    });
                 },
-                error: function(xhr, status, error) {
-                    $('#deleteModalBody').html(`
-                        <div class="alert alert-danger">
-                            <h4>Error</h4>
-                            <p>Failed to load delete confirmation. Please try again.</p>
-                        </div>
-                    `);
+                error: function() {
+                    $('#deleteModalBody').html('<div class="alert alert-danger">Failed to load delete confirmation.</div>');
                 }
             });
         }
 
-        // Handle form submission inside edit modal
-        $(document).on('submit', '#editModal form', function(e) {
-            e.preventDefault();
-
-            var form = $(this);
-            var formData = new FormData(this);
-
-            $.ajax({
-                url: form.attr('action'),
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    if (response.success || response.redirectTo) {
-                        bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
-                        location.reload();
-                    } else {
-                        $('#editModalBody').html(response);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    $('#editModalBody').html(`
-                        <div class="alert alert-danger">
-                            <h4>Error</h4>
-                            <p>Failed to update customer. Please try again.</p>
-                        </div>
-                    `);
-                }
-            });
-        });
-
-        // Handle delete confirmation
-        $(document).on('submit', '#deleteModal form', function(e) {
-            e.preventDefault();
-
-            var form = $(this);
-            var formData = new FormData(this);
-
-            $.ajax({
-                url: form.attr('action'),
-                type: 'POST',
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function(response) {
-                    bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
-                    location.reload();
-                },
-                error: function(xhr, status, error) {
-                    $('#deleteModalBody').html(`
-                        <div class="alert alert-danger">
-                            <h4>Error</h4>
-                            <p>Failed to delete customer. Please try again.</p>
-                        </div>
-                    `);
-                }
-            });
+        // ===========================
+        // CLEAR MODAL BODY ON HIDE
+        // ===========================
+        $('.modal').on('hidden.bs.modal', function() {
+            $(this).find('.modal-body').html('');
         });
     </script>
 }
+

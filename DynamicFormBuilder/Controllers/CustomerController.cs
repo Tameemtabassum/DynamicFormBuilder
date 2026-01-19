@@ -99,10 +99,8 @@ public class CustomerController : Controller
     public IActionResult Edit(int id)
     {
         var customer = _customerService.GetCustomerById(id);
-
         if (customer == null)
             return NotFound();
-
 
         var divisions = _customerService.GetAllDivision();
         ViewBag.DivisionList = divisions.Select(d => new SelectListItem
@@ -110,7 +108,6 @@ public class CustomerController : Controller
             Value = d.DivisionID.ToString(),
             Text = d.DivisionName
         }).ToList();
-
 
         var districts = _customerService.GetAllDistrict()
                         .Where(d => d.DivisionID == customer.DivisionID)
@@ -122,47 +119,62 @@ public class CustomerController : Controller
             Text = d.DistrictName
         }).ToList();
 
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            return PartialView("Edit", customer);
+
         return View(customer);
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult Edit(CustomerModel model)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            _customerService.UpdateCustomer(model);
-            return RedirectToAction("Index");
+            var divisions = _customerService.GetAllDivision();
+            ViewBag.DivisionList = divisions.Select(d => new SelectListItem
+            {
+                Value = d.DivisionID.ToString(),
+                Text = d.DivisionName
+            }).ToList();
+
+            var districts = _customerService.GetAllDistrict()
+                            .Where(d => d.DivisionID == model.DivisionID)
+                            .ToList();
+
+            ViewBag.DistrictList = districts.Select(d => new SelectListItem
+            {
+                Value = d.DistrictID.ToString(),
+                Text = d.DistrictName
+            }).ToList();
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return PartialView("Edit", model);
+
+            return View(model);
         }
 
-        var divisions = _customerService.GetAllDivision();
-        ViewBag.DivisionList = divisions.Select(d => new SelectListItem
-        {
-            Value = d.DivisionID.ToString(),
-            Text = d.DivisionName
-        }).ToList();
+        _customerService.UpdateCustomer(model);
 
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            return Json(new { success = true });
 
-        var districts = _customerService.GetAllDistrict()
-                        .Where(d => d.DivisionID == model.DivisionID)
-                        .ToList();
-
-        ViewBag.DistrictList = districts.Select(d => new SelectListItem
-        {
-            Value = d.DistrictID.ToString(),
-            Text = d.DistrictName
-        }).ToList();
-
-        return View(model);
+        return RedirectToAction("Index");
     }
+
 
     public IActionResult Details(int id)
     {
         var customer = _customerService.GetCustomerDetailsById(id);
-
         if (customer == null)
             return NotFound();
-        return View("Details",customer);
+
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            return PartialView("Details", customer);
+
+        return View(customer);
     }
+
     [HttpPost]
     public IActionResult UpdateBalance(int CustomerID, decimal Balance)
     {
@@ -188,19 +200,28 @@ public class CustomerController : Controller
     public IActionResult Delete(int id)
     {
         var customer = _customerService.GetCustomerById(id);
-
         if (customer == null)
             return NotFound();
+
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            return PartialView("Delete", customer);
 
         return View(customer);
     }
 
+
     [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
     public IActionResult DeleteConfirmed(int id)
     {
         _customerService.DeleteCustomer(id);
+
+        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            return Json(new { success = true });
+
         return RedirectToAction("Index");
     }
+
 
     [HttpPost]
     public IActionResult AddBalance(int CustomerID, decimal AmountToAdd)

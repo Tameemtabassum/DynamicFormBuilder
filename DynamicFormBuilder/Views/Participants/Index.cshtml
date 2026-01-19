@@ -6,47 +6,34 @@
 @{
     ViewData["Title"] = "Participants List";
 }
+
 <h2 class="mb-3">Participants List</h2>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
+    <div class="mb-3 d-flex gap-2">
         <a asp-action="Create" class="btn btn-primary">+ Add New Participant</a>
         <a asp-action="ExcelDownload" class="btn btn-success">Download Participants list</a>
-        <a href="@Url.Action("UploadExcel")" class="btn btn-primary">Upload Excel</a>
+        <a asp-action="UploadExcel" class="btn btn-primary">Upload Excel</a>
     </div>
-    <form method="get" asp-action="Index" class="d-flex gap-2" style="width: 400px;">
-        <input type="text"
-               name="searchQuery"
-               value="@ViewBag.SearchQuery"
-               class="form-control"
-               placeholder="Search participants..."
-               autocomplete="off">
-        <button type="submit" class="btn btn-secondary">Search</button>
-        @if (!string.IsNullOrWhiteSpace(ViewBag.SearchQuery))
-        {
-            <a asp-action="Index" class="btn btn-outline-secondary">Clear</a>
-        }
-    </form>
+
 </div>
 
-
-
-@if (Model != null && Model.Any())
-{
-    <table class="table table-bordered table-striped" id="participantsTable">
-        <thead class="table-dark">
-            <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Email</th>
-                <th>Phone</th>
-                <th>Address</th>
-                <th>Country</th>
-                <th style="width:150px;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var participant in Model)
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Address</th>
+            <th>Country</th>
+            <th style="width:130px;">Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            foreach (var participant in Model)
             {
                 <tr>
                     <td>@participant.Id</td>
@@ -55,46 +42,183 @@
                     <td>@participant.Phone</td>
                     <td>@participant.Address</td>
                     <td>@participant.Country</td>
-                    <td class="text-center">
-                        <div class="d-flex justify-content-center gap-1">
-                            <a asp-action="Edit"
-                               asp-route-id="@participant.Id"
-                               class="btn btn-warning btn-sm">
-                                Edit
-                            </a>
-                            <a asp-action="Details"
-                               asp-route-id="@participant.Id"
-                               class="btn btn-info btn-sm text-white">
-                                Details                           
-                            </a>
-                            <a asp-action="Delete"
-                               asp-route-id="@participant.Id"
-                               class="btn btn-danger btn-sm"
-                               onclick="return confirm('Are you sure?');">
-                                Delete
-                            </a>
+                    <td style="text-align: center;">
+                        <div class="dropdown">
+                            <button class="btn btn-info btn-sm dropdown-toggle"
+                                    type="button"
+                                    id="dropdownMenuButton_@participant.Id"
+                                    data-bs-toggle="dropdown"
+                                    aria-haspopup="true"
+                                    aria-expanded="false">
+                                Action
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="dropdownMenuButton_@participant.Id">
+                                <li>
+                                    <button class="dropdown-item" type="button" onclick="loadParticipantEdit('@participant.Id')">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </button>
+                                </li>
+                                <li>
+                                    <button class="dropdown-item" type="button" onclick="loadParticipantDetails('@participant.Id')">
+                                        <i class="bi bi-eye"></i> Details
+                                    </button>
+                                </li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <button class="dropdown-item text-danger" type="button" onclick="loadParticipantDelete('@participant.Id')">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </li>
+                            </ul>
                         </div>
                     </td>
                 </tr>
             }
-        </tbody>
-    </table>
-
-}
-
-<!-- Pagination Controls -->
-
-
-    <div class="mx-2 my-2">
-        @Html.PaginationFor(
-        Model,
-        page => Url.Action("Index", new
+        }
+        else
         {
-           
-            page,
-            pageSize = Model.PageSize
-        })
-        )
-</div>
-             
+            <tr>
+                <td colspan="7" class="text-center text-muted">No participants found.</td>
+            </tr>
+        }
+    </tbody>
+</table>
 
+<!-- Pagination -->
+<div class="mx-2 my-2">
+    @Html.PaginationFor(Model, page => Url.Action("Index", new { page, pageSize = Model.PageSize }))
+</div>
+
+<!-- DETAILS MODAL -->
+<div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Participant Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="detailsModalBody">
+                <div class="text-center">
+                    <div class="spinner-border" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Participant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="editModalBody">
+                <div class="text-center">
+                    <div class="spinner-border" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- DELETE MODAL -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Participant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="deleteModalBody">
+                <div class="text-center">
+                    <div class="spinner-border" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // MODAL HELPERS
+        function loadParticipantDetails(id) {
+            var modalEl = document.getElementById('detailsModal');
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+            $('#detailsModalBody').html(`<div class="text-center"><div class="spinner-border" role="status"></div></div>`);
+
+            $.get('@Url.Action("Details", "Participants")', { id: id }, function(result) {
+                $('#detailsModalBody').html(result);
+            }).fail(function() {
+                $('#detailsModalBody').html('<div class="alert alert-danger">Failed to load details.</div>');
+            });
+        }
+
+        function loadParticipantEdit(id) {
+            var modalEl = document.getElementById('editModal');
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+            $('#editModalBody').html(`<div class="text-center"><div class="spinner-border" role="status"></div></div>`);
+
+            $.get('@Url.Action("Edit", "Participants")', { id: id }, function(result) {
+                $('#editModalBody').html(result);
+            }).fail(function() {
+                $('#editModalBody').html('<div class="alert alert-danger">Failed to load edit form.</div>');
+            });
+        }
+
+        function loadParticipantDelete(id) {
+            var modalEl = document.getElementById('deleteModal');
+            var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+            modal.show();
+            $('#deleteModalBody').html(`<div class="text-center"><div class="spinner-border" role="status"></div></div>`);
+
+            $.get('@Url.Action("Delete", "Participants")', { id: id }, function(result) {
+                $('#deleteModalBody').html(result);
+            }).fail(function() {
+                $('#deleteModalBody').html('<div class="alert alert-danger">Failed to load delete confirmation.</div>');
+            });
+        }
+
+        // HANDLE FORM SUBMISSION
+        $(document).on('submit', '#editModal form', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: new FormData(this),
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('editModal')).hide();
+                    location.reload();
+                },
+                error: function() {
+                    $('#editModalBody').html('<div class="alert alert-danger">Failed to update participant.</div>');
+                }
+            });
+        });
+
+        $(document).on('submit', '#deleteModal form', function(e) {
+            e.preventDefault();
+            var form = $(this);
+            $.ajax({
+                url: form.attr('action'),
+                type: 'POST',
+                data: new FormData(this),
+                processData: false,
+                contentType: false,
+                success: function(response) {
+                    bootstrap.Modal.getOrCreateInstance(document.getElementById('deleteModal')).hide();
+                    location.reload();
+                },
+                error: function() {
+                    $('#deleteModalBody').html('<div class="alert alert-danger">Failed to delete participant.</div>');
+                }
+            });
+        });
+    </script>
+}

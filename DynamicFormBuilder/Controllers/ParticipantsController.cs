@@ -39,7 +39,15 @@ namespace DynamicFormBuilder.Controllers
                     Phone = p.Phone,
                     Id = p.Id
                 });
-            return View(participantsList.ToPagedList(page??1,pageSize));
+            var pagedList = participantsList.ToPagedList(page ?? 1, pageSize);
+
+            // Handle AJAX requests 
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return View(pagedList);
+            }
+
+            return View(pagedList);
         }
 
 
@@ -66,36 +74,56 @@ namespace DynamicFormBuilder.Controllers
         public IActionResult Edit(int id)
         {
             var participant = _participantsService.GetParticipantById(id);
-
             if (participant == null)
                 return NotFound();
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("Edit", participant);
+            }
 
             return View(participant);
         }
 
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public IActionResult Edit(ParticipantsModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _participantsService.UpdateParticipant(model);
-                return RedirectToAction("Index");
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                {
+                    return PartialView("Edit", model);
+                }
+                return View(model);
             }
 
-            return View(model);
+            _participantsService.UpdateParticipant(model);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new { success = true });
+            }
+
+            return RedirectToAction("Index");
         }
 
-        
+
         public IActionResult Delete(int id)
         {
             var participant = _participantsService.GetParticipantById(id);
-
             if (participant == null)
                 return NotFound();
 
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("Delete", participant);
+            }
+
             return View(participant);
         }
+
 
 
         [HttpPost, ActionName("Delete")]
@@ -103,7 +131,14 @@ namespace DynamicFormBuilder.Controllers
         public IActionResult DeleteConfirmed(int id)
         {
             _participantsService.DeleteParticipant(id);
-            return RedirectToAction("Index");
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return Json(new { success = true });
+            }
+
+
+            return RedirectToAction(nameof(Index));
         }
 
 
@@ -113,9 +148,13 @@ namespace DynamicFormBuilder.Controllers
             if (participant == null)
                 return NotFound();
 
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            {
+                return PartialView("Details", participant);
+            }
+
             return View(participant);
         }
-
 
 
         public IActionResult ExcelDownload()
@@ -181,6 +220,7 @@ namespace DynamicFormBuilder.Controllers
                 }
             }
         }
+        
         public IActionResult UploadExcel()
         {
             return View();
@@ -211,13 +251,11 @@ namespace DynamicFormBuilder.Controllers
                 await file.CopyToAsync(stream);
                 stream.Position = 0;
 
-
                 ExcelPackage.LicenseContext = LicenseContext.NonCommercial;
-               
                 using var package = new ExcelPackage(stream);
                 var sheet = package.Workbook.Worksheets.FirstOrDefault();
 
-                if (sheet == null || sheet.Dimension == null)
+                if (sheet?.Dimension == null)
                 {
                     TempData["Message"] = "Excel file is empty or invalid!";
                     return RedirectToAction("Index");
@@ -235,32 +273,33 @@ namespace DynamicFormBuilder.Controllers
                 // Process each row (skip header row 1)
                 for (int row = 2; row <= rows; row++)
                 {
-                    string phoneFromExcel = sheet.Cells[row, 4].Text?.Trim();
-                    string countryFromExcel = sheet.Cells[row, 6].Text?.Trim();
+                    string nameFromExcel = sheet.Cells[row, 1].Text?.Trim();  
+                    string countryFromExcel = sheet.Cells[row, 2].Text?.Trim(); 
 
-                  
-                    if (string.IsNullOrWhiteSpace(phoneFromExcel))
+                    if (string.IsNullOrWhiteSpace(nameFromExcel))
                         continue;
 
-                    // Find participant by phone number - EXACT MATCH ONLY
+                    // Normalize names to avoid small mismatches
+                    var normalizedExcelName = nameFromExcel.Trim().Replace("  ", " ").ToLower();
+
                     var participant = allParticipants.FirstOrDefault(p =>
-                        p.Phone == phoneFromExcel);
+                        !string.IsNullOrWhiteSpace(p.Name) &&
+                        p.Name.Trim().Replace("  ", " ").ToLower() == normalizedExcelName
+                    );
 
                     if (participant != null)
                     {
-                        
                         participant.Country = countryFromExcel;
                         _participantsService.UpdateParticipant(participant);
                         updated++;
                     }
                     else
                     {
-                       
                         notFound++;
                     }
                 }
 
-                TempData["Message"] = $"✓ {updated} participants updated. {notFound} phone numbers not found.";
+                TempData["Message"] = $"✓ {updated} participants updated. {notFound} names not found.";
             }
             catch (Exception ex)
             {
@@ -269,5 +308,6 @@ namespace DynamicFormBuilder.Controllers
 
             return RedirectToAction("Index");
         }
+
     }
 }
