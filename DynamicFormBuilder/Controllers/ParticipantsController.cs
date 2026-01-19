@@ -261,37 +261,38 @@ namespace DynamicFormBuilder.Controllers
                     return RedirectToAction("Index");
                 }
 
-                int rows = sheet.Dimension.Rows;
                 var allParticipants = _participantsService.GetAllParticipants()?.ToList();
-
                 if (allParticipants == null || !allParticipants.Any())
                 {
                     TempData["Message"] = "No participants in database!";
                     return RedirectToAction("Index");
                 }
 
-                // Process each row (skip header row 1)
-                for (int row = 2; row <= rows; row++)
+                for (int row = 2; row <= sheet.Dimension.Rows; row++)
                 {
-                    string nameFromExcel = sheet.Cells[row, 1].Text?.Trim();  
-                    string countryFromExcel = sheet.Cells[row, 2].Text?.Trim(); 
+                    string nameFromExcel = sheet.Cells[row, 1].GetValue<string>()?.Trim();
+                    string countryFromExcel = sheet.Cells[row, 2].GetValue<string>()?.Trim();
 
                     if (string.IsNullOrWhiteSpace(nameFromExcel))
                         continue;
 
-                    // Normalize names to avoid small mismatches
-                    var normalizedExcelName = nameFromExcel.Trim().Replace("  ", " ").ToLower();
+                    var normalizedExcelName = nameFromExcel.Replace("  ", " ").ToLower();
 
                     var participant = allParticipants.FirstOrDefault(p =>
                         !string.IsNullOrWhiteSpace(p.Name) &&
-                        p.Name.Trim().Replace("  ", " ").ToLower() == normalizedExcelName
+                        p.Name.Replace("  ", " ").ToLower() == normalizedExcelName
                     );
 
                     if (participant != null)
                     {
-                        participant.Country = countryFromExcel;
-                        _participantsService.UpdateParticipant(participant);
-                        updated++;
+                        // Get fresh instance from DB and update
+                        var dbParticipant = _participantsService.GetParticipantById(participant.Id);
+                        if (dbParticipant != null)
+                        {
+                            dbParticipant.Country = countryFromExcel;
+                            _participantsService.UpdateParticipant(dbParticipant);
+                            updated++;
+                        }
                     }
                     else
                     {
@@ -308,6 +309,5 @@ namespace DynamicFormBuilder.Controllers
 
             return RedirectToAction("Index");
         }
-
     }
 }
