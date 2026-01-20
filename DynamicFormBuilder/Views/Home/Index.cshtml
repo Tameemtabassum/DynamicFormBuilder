@@ -1,8 +1,86 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿
+@{
+    ViewData["Title"] = "Dashboard";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container-fluid px-4">
+
+    <!-- Page Header -->
+    <div class="mb-4">
+        <h1 class="mt-4">Dashboard</h1>
+        <p class="text-muted">
+            Manage  students, customers, participants and employees from one place.
+        </p>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Students</h6>
+                    <h3>@Model.StudentsCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Customers</h6>
+                    <h3>@Model.CustomersCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Participants</h6>
+                    <h3>@Model.ParticipantsCount</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h6 class="text-muted">Employees</h6>
+                    <h3>@Model.EmployeesCount</h3>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="mb-4">
+        <h4 class="mb-3">Quick Actions</h4>
+
+        <div class="d-flex flex-wrap gap-2">
+            <a asp-controller="Students" asp-action="Create" class="btn btn-primary">
+                + Create Student
+            </a>
+
+            <a asp-controller="Customer" asp-action="Create" class="btn btn-outline-primary">
+                + Add Customer
+            </a>
+
+            <a asp-controller="Participants" asp-action="Create" class="btn btn-outline-primary">
+                + Add Participant
+            </a>
+        </div>
+    </div>
+
+    <!-- Recent Activity -->
+    <div>
+        <h4 class="mb-3">Recent Activity</h4>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <p class="text-muted mb-0">
+                    No recent activity yet.
+                </p>
+            </div>
+        </div>
+    </div>
+
 </div>

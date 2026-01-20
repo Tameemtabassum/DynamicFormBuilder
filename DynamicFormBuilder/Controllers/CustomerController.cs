@@ -19,118 +19,93 @@ using System.Net;
 using X.PagedList.Extensions;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-[Authorize]
-public class CustomerController : Controller
+namespace DynamicFormBuilder.Controllers
+
 {
-    private readonly ICustomerService _customerService;
 
-    public CustomerController(ICustomerService customerService)
+    [Authorize]
+    public class CustomerController : Controller
     {
-        _customerService = customerService;
-    }
+        private readonly ICustomerService _customerService;
 
-    public IActionResult Index(string phone, int? divisionId, int page = 1, int pageSize = 10)
-    {
-        // Store filter values in ViewBag
-        ViewBag.Phone = phone;
-        ViewBag.DivisionId = divisionId;
-
-        // divisions for dropdown
-        var divisions = _customerService.GetAllDivision() ?? new List<DivisionModel>();
-        ViewBag.DivisionList = divisions.Select(d => new SelectListItem
+        public CustomerController(ICustomerService customerService)
         {
-            Value = d.DivisionID.ToString(),
-            Text = d.DivisionName
-        }).ToList();
-
-        // filtered customers
-        var allCustomers = _customerService.GetAllSearchCustomer(phone, divisionId);
-        return View(allCustomers.ToPagedList(page, pageSize));
-    }
-
-    public IActionResult Create()
-    {
-        var divisions = _customerService.GetAllDivision();
-        var districts = _customerService.GetAllDistrict();
-
-        ViewBag.DivisionList = divisions.Select(d => new SelectListItem
-        {
-            Value = d.DivisionID.ToString(),
-            Text = d.DivisionName
-        }).ToList();
-
-        ViewBag.DistrictList = districts.Select(d => new SelectListItem
-        {
-            Value = d.DistrictID.ToString(),
-            Text = d.DistrictName
-        }).ToList();
-
-        return View();
-    }
-
-    [HttpPost]
-    public IActionResult Create(CustomerModel model)
-    {
-        if (ModelState.IsValid)
-        {
-            _customerService.AddCustomer(model);
-            return RedirectToAction("Index");
+            _customerService = customerService;
         }
 
-
-        var divisions = _customerService.GetAllDivision();
-        var districts = _customerService.GetAllDistrict();
-
-        ViewBag.DivisionList = divisions.Select(d => new SelectListItem
+        public IActionResult Index(string phone, int? divisionId, int page = 1, int pageSize = 10)
         {
-            Value = d.DivisionID.ToString(),
-            Text = d.DivisionName
-        }).ToList();
+            // Store filter values in ViewBag
+            ViewBag.Phone = phone;
+            ViewBag.DivisionId = divisionId;
 
-        ViewBag.DistrictList = districts.Select(d => new SelectListItem
+            // divisions for dropdown
+            var divisions = _customerService.GetAllDivision() ?? new List<DivisionModel>();
+            ViewBag.DivisionList = divisions.Select(d => new SelectListItem
+            {
+                Value = d.DivisionID.ToString(),
+                Text = d.DivisionName
+            }).ToList();
+
+            // filtered customers
+            var allCustomers = _customerService.GetAllSearchCustomer(phone, divisionId);
+            return View(allCustomers.ToPagedList(page, pageSize));
+        }
+
+        public IActionResult Create()
         {
-            Value = d.DistrictID.ToString(),
-            Text = d.DistrictName
-        }).ToList();
+            var divisions = _customerService.GetAllDivision();
+            var districts = _customerService.GetAllDistrict();
 
-        return View(model);
-    }
+            ViewBag.DivisionList = divisions.Select(d => new SelectListItem
+            {
+                Value = d.DivisionID.ToString(),
+                Text = d.DivisionName
+            }).ToList();
 
-    public IActionResult Edit(int id)
-    {
-        var customer = _customerService.GetCustomerById(id);
-        if (customer == null)
-            return NotFound();
+            ViewBag.DistrictList = districts.Select(d => new SelectListItem
+            {
+                Value = d.DistrictID.ToString(),
+                Text = d.DistrictName
+            }).ToList();
 
-        var divisions = _customerService.GetAllDivision();
-        ViewBag.DivisionList = divisions.Select(d => new SelectListItem
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Create(CustomerModel model)
         {
-            Value = d.DivisionID.ToString(),
-            Text = d.DivisionName
-        }).ToList();
+            if (ModelState.IsValid)
+            {
+                _customerService.AddCustomer(model);
+                return RedirectToAction("Index");
+            }
 
-        var districts = _customerService.GetAllDistrict()
-                        .Where(d => d.DivisionID == customer.DivisionID)
-                        .ToList();
 
-        ViewBag.DistrictList = districts.Select(d => new SelectListItem
+            var divisions = _customerService.GetAllDivision();
+            var districts = _customerService.GetAllDistrict();
+
+            ViewBag.DivisionList = divisions.Select(d => new SelectListItem
+            {
+                Value = d.DivisionID.ToString(),
+                Text = d.DivisionName
+            }).ToList();
+
+            ViewBag.DistrictList = districts.Select(d => new SelectListItem
+            {
+                Value = d.DistrictID.ToString(),
+                Text = d.DistrictName
+            }).ToList();
+
+            return View(model);
+        }
+
+        public IActionResult Edit(int id)
         {
-            Value = d.DistrictID.ToString(),
-            Text = d.DistrictName
-        }).ToList();
+            var customer = _customerService.GetCustomerById(id);
+            if (customer == null)
+                return NotFound();
 
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return PartialView("Edit", customer);
-
-        return View(customer);
-    }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
-    public IActionResult Edit(CustomerModel model)
-    {
-        if (!ModelState.IsValid)
-        {
             var divisions = _customerService.GetAllDivision();
             ViewBag.DivisionList = divisions.Select(d => new SelectListItem
             {
@@ -139,7 +114,7 @@ public class CustomerController : Controller
             }).ToList();
 
             var districts = _customerService.GetAllDistrict()
-                            .Where(d => d.DivisionID == model.DivisionID)
+                            .Where(d => d.DivisionID == customer.DivisionID)
                             .ToList();
 
             ViewBag.DistrictList = districts.Select(d => new SelectListItem
@@ -149,202 +124,231 @@ public class CustomerController : Controller
             }).ToList();
 
             if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                return PartialView("Edit", model);
+                return PartialView("Edit", customer);
 
-            return View(model);
+            return View(customer);
         }
 
-        _customerService.UpdateCustomer(model);
-
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return Json(new { success = true });
-
-        return RedirectToAction("Index");
-    }
-
-
-    public IActionResult Details(int id)
-    {
-        var customer = _customerService.GetCustomerDetailsById(id);
-        if (customer == null)
-            return NotFound();
-
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return PartialView("Details", customer);
-
-        return View(customer);
-    }
-
-    [HttpPost]
-    public IActionResult UpdateBalance(int CustomerID, decimal Balance)
-    {
-        if (Balance < 0)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public IActionResult Edit(CustomerModel model)
         {
-            var customer = _customerService.GetCustomerById(CustomerID);
-            ModelState.AddModelError("Balance", "Balance cannot be negative");
-            return View("Details", customer);
+            if (!ModelState.IsValid)
+            {
+                var divisions = _customerService.GetAllDivision();
+                ViewBag.DivisionList = divisions.Select(d => new SelectListItem
+                {
+                    Value = d.DivisionID.ToString(),
+                    Text = d.DivisionName
+                }).ToList();
+
+                var districts = _customerService.GetAllDistrict()
+                                .Where(d => d.DivisionID == model.DivisionID)
+                                .ToList();
+
+                ViewBag.DistrictList = districts.Select(d => new SelectListItem
+                {
+                    Value = d.DistrictID.ToString(),
+                    Text = d.DistrictName
+                }).ToList();
+
+                if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    return PartialView("Edit", model);
+
+                return View(model);
+            }
+
+            _customerService.UpdateCustomer(model);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(new { success = true });
+
+            return RedirectToAction("Index");
         }
 
-        var existingCustomer = _customerService.GetCustomerById(CustomerID);
-        if (existingCustomer == null)
-            return NotFound();
 
-        existingCustomer.Balance = Balance;
-        _customerService.UpdateCustomer(existingCustomer);
-
-        TempData["Success"] = "Balance updated successfully!";
-        return RedirectToAction("Details", new { id = CustomerID });
-    }
-
-
-    public IActionResult Delete(int id)
-    {
-        var customer = _customerService.GetCustomerById(id);
-        if (customer == null)
-            return NotFound();
-
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return PartialView("Delete", customer);
-
-        return View(customer);
-    }
-
-
-    [HttpPost, ActionName("Delete")]
-    [ValidateAntiForgeryToken]
-    public IActionResult DeleteConfirmed(int id)
-    {
-        _customerService.DeleteCustomer(id);
-
-        if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-            return Json(new { success = true });
-
-        return RedirectToAction("Index");
-    }
-
-
-    [HttpPost]
-    public IActionResult AddBalance(int CustomerID, decimal AmountToAdd)
-    {
-        if (AmountToAdd <= 0)
+        public IActionResult Details(int id)
         {
-            TempData["Error"] = "Amount must be greater than zero!";
+            var customer = _customerService.GetCustomerDetailsById(id);
+            if (customer == null)
+                return NotFound();
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return PartialView("Details", customer);
+
+            return View(customer);
+        }
+
+        [HttpPost]
+        public IActionResult UpdateBalance(int CustomerID, decimal Balance)
+        {
+            if (Balance < 0)
+            {
+                var customer = _customerService.GetCustomerById(CustomerID);
+                ModelState.AddModelError("Balance", "Balance cannot be negative");
+                return View("Details", customer);
+            }
+
+            var existingCustomer = _customerService.GetCustomerById(CustomerID);
+            if (existingCustomer == null)
+                return NotFound();
+
+            existingCustomer.Balance = Balance;
+            _customerService.UpdateCustomer(existingCustomer);
+
+            TempData["Success"] = "Balance updated successfully!";
             return RedirectToAction("Details", new { id = CustomerID });
         }
 
-        _customerService.AddBalance(CustomerID, AmountToAdd);
 
-        TempData["Success"] = "Balance updated successfully!";
-        return RedirectToAction("Details", new { id = CustomerID });
-    }
-
-
-    [HttpGet]
-    public JsonResult GetDistricts(int divisionId)
-    {
-
-        var districts = _customerService.GetDistrictByDivisionId(divisionId)
-            .Select(d => new
-            {
-                districtID = d.DistrictID,
-                districtName = d.DistrictName
-            })
-            .ToList();
-
-        return Json(districts);
-    }
-    public IActionResult Excel_Download(string phone, int? divisionId)
-    {
-
-        //================================FOR EXCEL EXPORT REPORT================================
-        var sFileName = "Customer_Details" + "_" + DateTime.Now.ToString("dd-MM-yyyy") + ".xlsx";
-
-        using (var workbook = new XLWorkbook())
+        public IActionResult Delete(int id)
         {
-            //===FOR Login History EXCEL EXPORT REPORT===
+            var customer = _customerService.GetCustomerById(id);
+            if (customer == null)
+                return NotFound();
 
-            var data = _customerService.GetAllSearchCustomer(phone, divisionId);
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return PartialView("Delete", customer);
 
-
-            var ws = workbook.Worksheets.Add("Report");
-            ws.RowHeight = 20;
-
-            var range = ws.Range("A1:K1");
-            range.Style.Border.TopBorder = XLBorderStyleValues.Thin;
-            range.Style.Border.LeftBorder = XLBorderStyleValues.Thin;
-            range.Style.Border.RightBorder = XLBorderStyleValues.Thin;
-            range.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
-
-            range.Style.Border.TopBorderColor = XLColor.Black;
-            range.Style.Border.LeftBorderColor = XLColor.Black;
-            range.Style.Border.RightBorderColor = XLColor.Black;
-            range.Style.Border.BottomBorderColor = XLColor.Black;
+            return View(customer);
+        }
 
 
-            ws.Row(1).Style.Fill.PatternType = XLFillPatternValues.Solid;
-            ws.Row(1).Style.Fill.BackgroundColor = XLColor.FromArgb(200, 200, 198);
-            ws.Row(1).Height = 20;
-            ws.Row(1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-            ws.Row(1).Style.Font.Bold = true;
-            ws.Row(1).Style.Font.FontSize = 12;
+        [HttpPost, ActionName("Delete")]
+        [ValidateAntiForgeryToken]
+        public IActionResult DeleteConfirmed(int id)
+        {
+            _customerService.DeleteCustomer(id);
+
+            if (Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                return Json(new { success = true });
+
+            return RedirectToAction("Index");
+        }
 
 
-            if (data != null)
+        [HttpPost]
+        public IActionResult AddBalance(int CustomerID, decimal AmountToAdd)
+        {
+            if (AmountToAdd <= 0)
             {
-                var headerColumn = 1;
-                ws.Cell(1, headerColumn++).Value = "ID";
-                ws.Cell(1, headerColumn++).Value = "Full Name";
-                ws.Cell(1, headerColumn++).Value = "Phone";
-                ws.Cell(1, headerColumn++).Value = "Email";
-                ws.Cell(1, headerColumn++).Value = "NID";
-                ws.Cell(1, headerColumn++).Value = "Division";
-                ws.Cell(1, headerColumn++).Value = "District";
-                ws.Cell(1, headerColumn++).Value = "DOB";
-                ws.Cell(1, headerColumn++).Value = "Profession";
-                ws.Cell(1, headerColumn++).Value = "Balance";
-             
+                TempData["Error"] = "Amount must be greater than zero!";
+                return RedirectToAction("Details", new { id = CustomerID });
             }
 
-            if (data.Any())
-            {
-                int rowId = 2;
+            _customerService.AddBalance(CustomerID, AmountToAdd);
 
-                foreach (var singleData in data)
+            TempData["Success"] = "Balance updated successfully!";
+            return RedirectToAction("Details", new { id = CustomerID });
+        }
+
+
+        [HttpGet]
+        public JsonResult GetDistricts(int divisionId)
+        {
+
+            var districts = _customerService.GetDistrictByDivisionId(divisionId)
+                .Select(d => new
                 {
-                    var DataColumn = 1;
-                    ws.Cell(rowId, DataColumn++).Value = singleData.CustomerID;
-                    ws.Cell(rowId, DataColumn++).Value = singleData.FullName;
-                    ws.Cell(rowId, DataColumn++).Value = singleData.Phone;
-                    ws.Cell(rowId, DataColumn++).Value = singleData.Email;
-                    ws.Cell(rowId, DataColumn++).Value = singleData.NID;
-                    ws.Cell(rowId, DataColumn++).Value = singleData.DivisionName;
-                    ws.Cell(rowId, DataColumn++).Value = singleData.DistrictName;
-                    ws.Cell(rowId, DataColumn++).Value = singleData.DOB?.ToString("yyyy-MM-dd");
-                    ws.Cell(rowId, DataColumn++).Value = singleData.Profession;
-                    ws.Cell(rowId, DataColumn++).Value = singleData.Balance;
-                  
-                   
+                    districtID = d.DistrictID,
+                    districtName = d.DistrictName
+                })
+                .ToList();
 
-                    rowId++;
+            return Json(districts);
+        }
+        public IActionResult Excel_Download(string phone, int? divisionId)
+        {
+
+            //================================FOR EXCEL EXPORT REPORT================================
+            var sFileName = "Customer_Details" + "_" + DateTime.Now.ToString("dd-MM-yyyy") + ".xlsx";
+
+            using (var workbook = new XLWorkbook())
+            {
+                //===FOR Login History EXCEL EXPORT REPORT===
+
+                var data = _customerService.GetAllSearchCustomer(phone, divisionId);
+
+
+                var ws = workbook.Worksheets.Add("Report");
+                ws.RowHeight = 20;
+
+                var range = ws.Range("A1:K1");
+                range.Style.Border.TopBorder = XLBorderStyleValues.Thin;
+                range.Style.Border.LeftBorder = XLBorderStyleValues.Thin;
+                range.Style.Border.RightBorder = XLBorderStyleValues.Thin;
+                range.Style.Border.BottomBorder = XLBorderStyleValues.Thin;
+
+                range.Style.Border.TopBorderColor = XLColor.Black;
+                range.Style.Border.LeftBorderColor = XLColor.Black;
+                range.Style.Border.RightBorderColor = XLColor.Black;
+                range.Style.Border.BottomBorderColor = XLColor.Black;
+
+
+                ws.Row(1).Style.Fill.PatternType = XLFillPatternValues.Solid;
+                ws.Row(1).Style.Fill.BackgroundColor = XLColor.FromArgb(200, 200, 198);
+                ws.Row(1).Height = 20;
+                ws.Row(1).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                ws.Row(1).Style.Font.Bold = true;
+                ws.Row(1).Style.Font.FontSize = 12;
+
+
+                if (data != null)
+                {
+                    var headerColumn = 1;
+                    ws.Cell(1, headerColumn++).Value = "ID";
+                    ws.Cell(1, headerColumn++).Value = "Full Name";
+                    ws.Cell(1, headerColumn++).Value = "Phone";
+                    ws.Cell(1, headerColumn++).Value = "Email";
+                    ws.Cell(1, headerColumn++).Value = "NID";
+                    ws.Cell(1, headerColumn++).Value = "Division";
+                    ws.Cell(1, headerColumn++).Value = "District";
+                    ws.Cell(1, headerColumn++).Value = "DOB";
+                    ws.Cell(1, headerColumn++).Value = "Profession";
+                    ws.Cell(1, headerColumn++).Value = "Balance";
+
                 }
-            }
+
+                if (data.Any())
+                {
+                    int rowId = 2;
+
+                    foreach (var singleData in data)
+                    {
+                        var DataColumn = 1;
+                        ws.Cell(rowId, DataColumn++).Value = singleData.CustomerID;
+                        ws.Cell(rowId, DataColumn++).Value = singleData.FullName;
+                        ws.Cell(rowId, DataColumn++).Value = singleData.Phone;
+                        ws.Cell(rowId, DataColumn++).Value = singleData.Email;
+                        ws.Cell(rowId, DataColumn++).Value = singleData.NID;
+                        ws.Cell(rowId, DataColumn++).Value = singleData.DivisionName;
+                        ws.Cell(rowId, DataColumn++).Value = singleData.DistrictName;
+                        ws.Cell(rowId, DataColumn++).Value = singleData.DOB?.ToString("yyyy-MM-dd");
+                        ws.Cell(rowId, DataColumn++).Value = singleData.Profession;
+                        ws.Cell(rowId, DataColumn++).Value = singleData.Balance;
 
 
-            for (int i = 1; i <= 11; i++)
-            {
-                ws.Column(i).AdjustToContents();
-                ws.Column(i).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
-                ws.Column(i).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
 
-            }
+                        rowId++;
+                    }
+                }
 
-            using (var stream = new MemoryStream())
-            {
-                workbook.SaveAs(stream);
-                var content = stream.ToArray();
-                return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+
+                for (int i = 1; i <= 11; i++)
+                {
+                    ws.Column(i).AdjustToContents();
+                    ws.Column(i).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                    ws.Column(i).Style.Alignment.Vertical = XLAlignmentVerticalValues.Center;
+
+                }
+
+                using (var stream = new MemoryStream())
+                {
+                    workbook.SaveAs(stream);
+                    var content = stream.ToArray();
+                    return File(content, "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", sFileName);
+                }
             }
         }
     }
 }
-

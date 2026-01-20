@@ -1,14 +1,4 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
-
-// Write your JavaScript code.
-//SAGOR
-
-// ==========================================
-// CENTRALIZED PAGINATION UTILITY
-// Include this in _Layout.cshtml or as a separate JS file
-// ==========================================
-
+﻿
 /**
  * Loads a partial view into the specified container via AJAX
  * @param {string} url - The URL to fetch
