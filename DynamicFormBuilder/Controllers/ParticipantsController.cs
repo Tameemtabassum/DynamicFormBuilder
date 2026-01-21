@@ -309,5 +309,23 @@ namespace DynamicFormBuilder.Controllers
 
             return RedirectToAction("Index");
         }
+
+
+        [HttpGet]
+        public IActionResult DownloadParticipantsTemplate()
+        {
+            var filePath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads", "FileTemplate", "ParticipantsUploadTemplate.xlsx");
+
+            if (!System.IO.File.Exists(filePath))
+            {
+                return NotFound("Template file not found.");
+            }
+
+            var contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            var fileName = "ParticipantsUploadTemplate.xlsx";
+            var fileBytes = System.IO.File.ReadAllBytes(filePath);
+
+            return File(fileBytes, contentType, fileName);
+        }
     }
 }
