@@ -14,6 +14,7 @@ namespace DynamicFormBuilder.Data.DBContext
         }
        
         public DbSet<StudentModel> StudentModels { get; set; }
+        public DbSet<DepartmentModel> Departments { get; set; }
         public DbSet<CustomerModel> CustomerModels { get; set; }
         public DbSet<DivisionModel> DivisionModels { get; set; }
 

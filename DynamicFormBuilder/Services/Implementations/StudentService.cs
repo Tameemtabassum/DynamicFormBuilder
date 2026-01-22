@@ -11,14 +11,14 @@ namespace DynamicFormBuilder.Services.Implementations
     public class StudentService : IStudentService
     {
         public readonly ApplicationDbContext _dbContext;
-        public StudentService(ApplicationDbContext dbContext) 
+        public StudentService(ApplicationDbContext dbContext)
         {
             _dbContext = dbContext;
         }
 
 
 
-       
+
         public StudentModel GetStudentById(int id)
         {
             var student = _dbContext.StudentModels.Find(id);
@@ -27,7 +27,11 @@ namespace DynamicFormBuilder.Services.Implementations
 
         public List<StudentModel> GetAllStudents()
         {
-            var students = _dbContext.StudentModels.ToList();
+            // Only get students with valid DepartmentID
+            var students = _dbContext.StudentModels
+                .Include(s => s.Department)
+                .Where(s => s.DepartmentID != null && s.DepartmentID > 0)
+                .ToList();
             return students;
         }
 
@@ -50,5 +54,11 @@ namespace DynamicFormBuilder.Services.Implementations
             _dbContext.SaveChanges();
         }
 
+
+
+        public IEnumerable<DepartmentModel> GetAllDepartments()
+        {
+            return _dbContext.Departments.ToList();
+        }
     }
 }

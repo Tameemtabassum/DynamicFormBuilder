@@ -14,5 +14,8 @@ namespace DynamicFormBuilder.Services.Interfaces
         void UpdateStudent(StudentModel student);
         void DeleteStudent(int id);
 
-    }
+        IEnumerable<DepartmentModel> GetAllDepartments();
+    
+
+}
 }

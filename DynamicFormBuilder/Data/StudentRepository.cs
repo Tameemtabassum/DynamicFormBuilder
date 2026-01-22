@@ -32,8 +32,7 @@ namespace DynamicFormBuilder.Data
                         PhoneNumber = reader["PhoneNumber"].ToString(),
                         Email = reader["Email"].ToString(),
                         Address = reader["Address"].ToString(),
-                        Department = reader["Department"].ToString(),
-
+                        DepartmentID = reader["DepartmentID"] != DBNull.Value ? (int)reader["DepartmentID"] : 0
 
                     });
                 }

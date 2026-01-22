@@ -9,6 +9,7 @@ namespace DynamicFormBuilder.Models
         [Required]
         [Key]
         public int Id { get; set; }
+
         [Required(ErrorMessage = "Student name is required")]
         [RegularExpression(@"^[A-Za-z\s]+$", ErrorMessage = "Name must contain only letters and spaces")]
         public string StudentName { get; set; }
@@ -27,8 +28,10 @@ namespace DynamicFormBuilder.Models
 
         public string Address { get; set; }
 
-        public string Department { get; set; }
+        [Required(ErrorMessage = "Department is required")]
+        public int DepartmentID { get; set; }
 
+        [ForeignKey("DepartmentID")]
+        public DepartmentModel Department { get; set; }
     }
-
 }

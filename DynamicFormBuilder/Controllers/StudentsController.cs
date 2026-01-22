@@ -5,42 +5,36 @@ using DynamicFormBuilder.Services.Interfaces;
 using DynamicFormBuilder.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using X.PagedList.Extensions;
 
 [Authorize]
 public class StudentsController : Controller
 {
-    //private readonly StudentRepository _studentRepository;
     private readonly IStudentService _studentService;
-
 
     public StudentsController(IStudentService studentService)
     {
-        //_studentRepository = repository;
         _studentService = studentService;
     }
 
     // GET: Students/Index
     public IActionResult Index(string name, string email, int page = 1, int pageSize = 10)
     {
-        // Store filter values in ViewBag
         ViewBag.Name = name;
         ViewBag.Email = email;
 
         IEnumerable<StudentModel> students = _studentService.GetAllStudents();
 
-        // Apply filters if needed
         if (!string.IsNullOrEmpty(name))
         {
-            students = students.Where(s => s.StudentName.Contains(name)); 
+            students = students.Where(s => s.StudentName.Contains(name));
         }
-
         if (!string.IsNullOrEmpty(email))
         {
             students = students.Where(s => s.Email.Contains(email));
         }
 
-        // Map to ViewModel 
         var studentViewModels = students.Select(s => new StudentViewModel
         {
             Id = s.Id,
@@ -49,8 +43,8 @@ public class StudentsController : Controller
             PhoneNumber = s.PhoneNumber,
             Email = s.Email,
             Address = s.Address,
-            Department = s.Department
-        }).ToList(); 
+            Department = s.Department?.DepartmentName
+        }).ToList();
 
         return View(studentViewModels.ToPagedList(page, pageSize));
     }
@@ -58,8 +52,17 @@ public class StudentsController : Controller
     // GET: Students/Create
     public IActionResult Create()
     {
+        var departments = _studentService.GetAllDepartments();
+
+        ViewBag.DepartmentList = departments.Select(d => new SelectListItem
+        {
+            Value = d.DepartmentID.ToString(),
+            Text = d.DepartmentName
+        }).ToList();
+
         return View();
     }
+
 
     // POST: Students/Create
     [HttpPost]
@@ -67,22 +70,35 @@ public class StudentsController : Controller
     {
         if (ModelState.IsValid)
         {
-            // Save the student to the database using repository
-            
             _studentService.AddStudent(model);
-
             ViewBag.Message = "Student Registered Successfully!";
             return RedirectToAction("Index");
         }
 
+        var departments = _studentService.GetAllDepartments();
+
+        ViewBag.DepartmentList = departments.Select(d => new SelectListItem
+        {
+            Value = d.DepartmentID.ToString(),
+            Text = d.DepartmentName
+        }).ToList();
+
         return View(model);
     }
+
     public IActionResult Edit(int id)
     {
         var student = _studentService.GetStudentById(id);
-
         if (student == null)
             return NotFound();
+
+        var departments = _studentService.GetAllDepartments();
+
+        ViewBag.DepartmentList = departments.Select(d => new SelectListItem
+        {
+            Value = d.DepartmentID.ToString(),
+            Text = d.DepartmentName
+        }).ToList();
 
         return View(student);
     }
@@ -96,18 +112,25 @@ public class StudentsController : Controller
             return RedirectToAction("Index");
         }
 
+        var departments = _studentService.GetAllDepartments();
+
+        ViewBag.DepartmentList = departments.Select(d => new SelectListItem
+        {
+            Value = d.DepartmentID.ToString(),
+            Text = d.DepartmentName
+        }).ToList();
+
         return View(model);
     }
+
     // GET: Students/Delete/5
     public IActionResult Delete(int id)
     {
-        // Optionally, fetch the student to show confirmation
         var student = _studentService.GetStudentById(id);
-
         if (student == null)
             return NotFound();
 
-        return View(student); // pass student to confirmation view
+        return View(student);
     }
 
     // POST: Students/Delete/5
@@ -118,5 +141,4 @@ public class StudentsController : Controller
         _studentService.DeleteStudent(id);
         return RedirectToAction("Index");
     }
-
 }

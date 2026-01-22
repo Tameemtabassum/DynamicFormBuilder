@@ -40,9 +40,12 @@
                 <input asp-for="Address" class="form-control border-warning" />
             </div>
 
-            <div class="mb-3">
-                <label asp-for="Department" class="form-label fw-semibold text-warning"></label>
-                <input asp-for="Department" class="form-control border-warning" />
+            <div class="form-group">
+                <label asp-for="DepartmentID" class="control-label fw-semibold text-warning">Department</label>
+                <select asp-for="DepartmentID" class="form-control" asp-items="ViewBag.DepartmentList">
+                    <option value="">-- Select Department --</option>
+                </select>
+                <span asp-validation-for="DepartmentID" class="text-danger"></span>
             </div>
 
             <button type="submit" class="btn btn-warning w-100 mt-2 fw-semibold">
