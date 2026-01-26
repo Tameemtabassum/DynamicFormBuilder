@@ -1,0 +1,134 @@
+﻿@model DynamicFormBuilder.ViewModels.AccountDetailsViewModel
+
+@{
+    ViewData["Title"] = "Account Details";
+}
+
+<div class="account-details-page">
+    <div class="account-details-card card shadow-sm">
+
+        <!-- HEADER -->
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-person-circle"></i> Account Details
+            </h5>
+          
+        </div>
+
+        <!-- BODY -->
+        <div class="card-body">
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success py-2 mb-2">
+                    <i class="bi bi-check-circle"></i> @TempData["SuccessMessage"]
+                </div>
+            }
+
+            <!-- PERSONAL INFO -->
+            <h6 class="section-title">Personal Information</h6>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <label>First Name</label>
+                    <p>@Model.FirstName</p>
+                </div>
+                <div class="col-md-6">
+                    <label>Last Name</label>
+                    <p>@Model.LastName</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <label>Email</label>
+                    <p><i class="bi bi-envelope"></i> @Model.Email</p>
+                </div>
+                <div class="col-md-6">
+                    <label>Phone</label>
+                    <p>
+                        @if (!string.IsNullOrWhiteSpace(Model.PhoneNumber))
+                        {
+                            <i class="bi bi-telephone"></i> 
+                            @Model.PhoneNumber
+                        }
+                        else
+                        {
+                            <span class="text-muted">Not provided</span>
+                        }
+                    </p>
+                </div>
+            </div>
+
+            <!-- ADDRESS -->
+            <h6 class="section-title mt-2">Address Information</h6>
+
+            <div class="row">
+                <div class="col-12">
+                    <label>Street Address</label>
+                    <p>@(string.IsNullOrWhiteSpace(Model.Address) ? "Not provided" : Model.Address)</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 col-lg-4">
+                    <label>City</label>
+                    <p>@(string.IsNullOrWhiteSpace(Model.City) ? "Not provided" : Model.City)</p>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <label>State</label>
+                    <p>@(string.IsNullOrWhiteSpace(Model.State) ? "Not provided" : Model.State)</p>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <label>Postal Code</label>
+                    <p>@(string.IsNullOrWhiteSpace(Model.PostalCode) ? "Not provided" : Model.PostalCode)</p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <label>Country</label>
+                    <p>@(string.IsNullOrWhiteSpace(Model.Country) ? "Not provided" : Model.Country)</p>
+                </div>
+            </div>
+
+            <!-- ACCOUNT INFO -->
+            <h6 class="section-title mt-2">Account Information</h6>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <label>Member Since</label>
+                    <p><i class="bi bi-calendar-check"></i> @Model.CreatedAt.ToString("MMM dd, yyyy")</p>
+                </div>
+                <div class="col-md-6">
+                    <label>Last Updated</label>
+                    <p>
+                        @if (Model.UpdatedAt.HasValue)
+                        {
+                            <i class="bi bi-clock-history"></i>
+                            @Model.UpdatedAt.Value.ToString("MMM dd, yyyy")
+                        }
+                        else
+                        {
+                            <span class="text-muted">Never updated</span>
+                        }
+                    </p>
+                </div>
+            </div>
+
+            <!-- ACTION BUTTONS -->
+            <div class="d-flex gap-2 mt-2">
+                <a asp-action="Edit" class="btn btn-primary btn-sm">
+                    <i class="bi bi-pencil"></i> Edit
+                </a>
+                <a asp-action="ChangePassword" class="btn btn-warning btn-sm">
+                    <i class="bi bi-key"></i> Password
+                </a>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary btn-sm">
+                    <i class="bi bi-house"></i> Dashboard
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
