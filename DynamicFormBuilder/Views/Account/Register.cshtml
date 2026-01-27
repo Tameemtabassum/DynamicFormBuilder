@@ -1,62 +1,112 @@
-﻿@model DynamicFormBuilder.Models.RegisterViewModel
+﻿@model DynamicFormBuilder.ViewModels.RegisterViewModel
+
 @{
     ViewData["Title"] = "Register";
 }
 
 <div class="auth-container">
-    <div class="card auth-card">
-        <div class="card-header auth-card-header">
+    <div class="auth-card">
+        <div class="auth-card-header">
             <i class="bi bi-person-plus"></i>
             <h2>Create Account</h2>
             <p>Join us today!</p>
         </div>
+
         <div class="card-body">
             <form asp-action="Register" method="post">
                 <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
 
-                <div class="mb-2">
-                    <label asp-for="Email" class="form-label">Email</label>
-                    <input asp-for="Email" class="form-control" placeholder="Enter your email" />
-                    <span asp-validation-for="Email" class="text-danger"></span>
-                </div>
+                <!-- Personal Information Section -->
+                <h5 class="mb-3 text-primary">Personal Information</h5>
 
-                <div class="row">
-                    <div class="col-md-6 mb-2">
+                <div class="row mb-3">
+                    <div class="col-md-6">
                         <label asp-for="FirstName" class="form-label">First Name</label>
-                        <input asp-for="FirstName" class="form-control" placeholder="First name" />
+                        <input asp-for="FirstName" class="form-control" placeholder="Enter first name" />
                         <span asp-validation-for="FirstName" class="text-danger"></span>
                     </div>
-
-                    <div class="col-md-6 mb-2">
+                    <div class="col-md-6">
                         <label asp-for="LastName" class="form-label">Last Name</label>
-                        <input asp-for="LastName" class="form-control" placeholder="Last name" />
+                        <input asp-for="LastName" class="form-control" placeholder="Enter last name" />
                         <span asp-validation-for="LastName" class="text-danger"></span>
                     </div>
                 </div>
 
-                <div class="mb-2">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="Email" class="form-label">Email</label>
+                        <input asp-for="Email" class="form-control" type="email" placeholder="Enter your email" />
+                        <span asp-validation-for="Email" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-6">
+                        <label asp-for="PhoneNumber" class="form-label">Phone Number</label>
+                        <input asp-for="PhoneNumber" class="form-control" placeholder="Enter phone number" />
+                        <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Address Information Section -->
+                <h5 class="mb-3 mt-4 text-primary">Address Information</h5>
+
+                <div class="mb-3">
+                    <label asp-for="Address" class="form-label">Address</label>
+                    <input asp-for="Address" class="form-control" placeholder="Enter street address" />
+                    <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label asp-for="City" class="form-label">City</label>
+                        <input asp-for="City" class="form-control" placeholder="Enter city" />
+                        <span asp-validation-for="City" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="State" class="form-label">State</label>
+                        <input asp-for="State" class="form-control" placeholder="Enter state" />
+                        <span asp-validation-for="State" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-4">
+                        <label asp-for="PostalCode" class="form-label">Postal Code</label>
+                        <input asp-for="PostalCode" class="form-control" placeholder="Enter postal code" />
+                        <span asp-validation-for="PostalCode" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Country" class="form-label">Country</label>
+                    <input asp-for="Country" class="form-control" placeholder="Enter country" />
+                    <span asp-validation-for="Country" class="text-danger"></span>
+                </div>
+
+                <!-- Account Security Section -->
+                <h5 class="mb-3 mt-4 text-primary">Account Security</h5>
+
+                <div class="mb-3">
                     <label asp-for="Password" class="form-label">Password</label>
-                    <input asp-for="Password" class="form-control" placeholder="Create a password" />
+                    <input asp-for="Password" class="form-control" type="password" placeholder="Create a password" />
                     <span asp-validation-for="Password" class="text-danger"></span>
                 </div>
 
-                <div class="mb-2">
+                <div class="mb-3">
                     <label asp-for="ConfirmPassword" class="form-label">Confirm Password</label>
-                    <input asp-for="ConfirmPassword" class="form-control" placeholder="Confirm your password" />
+                    <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Confirm your password" />
                     <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
                 </div>
 
                 <button type="submit" class="btn btn-primary w-100">
-                    <i class="bi bi-person-check me-2"></i>Create Account
+                    <i class="bi bi-person-plus-fill me-2"></i>Create Account
                 </button>
             </form>
         </div>
+
         <div class="card-footer">
-            Already have an account? <a asp-action="Login" class="fw-bold">Login here</a>
+            Already have an account? <a asp-action="Login">Sign in here</a>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <partial name="_ValidationScriptsPartial" />
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

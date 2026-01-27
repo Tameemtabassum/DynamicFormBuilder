@@ -27,7 +27,6 @@ namespace DynamicFormBuilder.Controllers
         {
             return View();
         }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -40,6 +39,12 @@ namespace DynamicFormBuilder.Controllers
                     Email = model.Email,
                     FirstName = model.FirstName,
                     LastName = model.LastName,
+                    PhoneNumber = model.PhoneNumber,           // NEW
+                    Address = model.Address,       // NEW
+                    City = model.City,                   // NEW
+                    State = model.State,                 // NEW
+                    PostalCode = model.PostalCode,       // NEW
+                    Country = model.Country,             // NEW
                     CreatedAt = DateTime.UtcNow
                 };
 
@@ -80,7 +85,7 @@ namespace DynamicFormBuilder.Controllers
                     model.Email,
                     model.Password,
                     isPersistent: false,
-                    lockoutOnFailure: true);
+                    lockoutOnFailure: false);
 
                 if (result.Succeeded)
                 {

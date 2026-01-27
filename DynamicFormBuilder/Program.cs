@@ -58,6 +58,7 @@ builder.Services.RegisterApplicationServices();
 builder.Services.AddScoped<FormRepository>();
 builder.Services.AddScoped<IParticipantsService, ParticipantsService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
+builder.Services.AddScoped<IWeatherService, WeatherService>();
 
 var app = builder.Build();
 

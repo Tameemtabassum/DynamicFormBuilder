@@ -1,0 +1,75 @@
+﻿
+@{
+    ViewData["Title"] = "Weather Dashboard";
+    var current = Model.Current;
+    var next7 = Model.Next7Days;
+    var prev7 = Model.Previous7Days;
+}
+
+        <div class="container mt-4">
+
+            <h2 class="mb-4 text-center"> Weather Dashboard</h2>
+
+            <!-- CURRENT WEATHER -->
+            <div class="card mb-4 shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    Current Weather - @current.City
+                </div>
+                <div class="card-body">
+                    <h4>@current.Temperature °C</h4>
+                    <p>
+                        <strong>Condition:</strong> @current.Condition <br />
+                        <strong>Date:</strong> @current.Date.ToString("dd MMM yyyy")
+                    </p>
+                </div>
+            </div>
+
+            <!-- NEXT 7 DAYS -->
+            <h4 class="mt-4">Next 7 Days Forecast</h4>
+            <table class="table table-bordered table-striped">
+                <thead class="table-success">
+                    <tr>
+                        <th>Date</th>
+                        <th>Min Temp (°C)</th>
+                        <th>Max Temp (°C)</th>
+                        <th>Condition</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var day in next7)
+                    {
+                        <tr>
+                            <td>@day.Date.ToString("dd MMM")</td>
+                            <td>@day.MinTemp</td>
+                            <td>@day.MaxTemp</td>
+                            <td>@day.Condition</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- PREVIOUS 7 DAYS -->
+            <h4 class="mt-4">Previous 7 Days</h4>
+            <table class="table table-bordered table-striped">
+                <thead class="table-warning">
+                    <tr>
+                        <th>Date</th>
+                        <th>Min Temp (°C)</th>
+                        <th>Max Temp (°C)</th>
+                        <th>Condition</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var day in prev7)
+                    {
+                        <tr>
+                            <td>@day.Date.ToString("dd MMM")</td>
+                            <td>@day.MinTemp</td>
+                            <td>@day.MaxTemp</td>
+                            <td>@day.Condition</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+        </div>
